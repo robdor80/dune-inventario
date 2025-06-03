@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚗 Vehículos - Dune Awakening</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="main.js"></script>
+    <script defer src="firebase-config.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🚗 Vehículos</h1>
+            <p>Gestión de transporte terrestre y aéreo</p>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <a class="tab-btn" href="index.html">📊 Dashboard</a>
+        <a class="tab-btn" href="raw.html">🗿 Recursos en bruto</a>
+        <a class="tab-btn" href="refined.html">⚗️ Recursos refinados</a>
+        <a class="tab-btn" href="objects.html">🔧 Objetos</a>
+        <a class="tab-btn active" href="vehicles.html">🚗 Vehículos</a>
+        <a class="tab-btn" href="weapons.html">⚔️ Armas</a>
+    </nav>
+
+    <main class="main-content">
+        <section class="tab-content active">
+            <div class="tab-header">
+                <h2>🚗 Vehículos</h2>
+                <button class="add-btn" id="addVehicleBtn">+ Añadir Vehículo</button>
+            </div>
+
+            <div class="filters">
+                <select id="vehicleCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Ligero">Ligero</option>
+                    <option value="Pesado">Pesado</option>
+                    <option value="Aéreo">Aéreo</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="vehicleLevelFilter" class="filter-select">
+                    <option value="">Todos los tiers</option>
+                    <option value="0">Tier 0</option>
+                    <option value="1">Tier 1</option>
+                    <option value="2">Tier 2</option>
+                </select>
+            </div>
+
+            <div id="vehiclesContainer" class="items-container">
+                <!-- Los vehículos se cargarán dinámicamente aquí -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Web creada por <strong>Roberto Dorado Rodríguez</strong> © 2025</p>
+        </div>
+    </footer>
+</body>
+</html>

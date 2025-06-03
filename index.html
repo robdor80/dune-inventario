@@ -2,42 +2,54 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dune Inventario</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📊 Dashboard - Dune Awakening</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="main.js"></script>
+  <script defer src="firebase-config.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Dune Inventario</h1>
-    <div class="botonera">
-      <span id="userName"></span>
-      <button id="loginBtn">Iniciar sesión</button>
-      <button onclick="saveAll()">Guardar</button>
-      <button onclick="exportarDatos()">Exportar</button>
-      <input type="file" id="importarArchivo" accept=".json" style="display:none" onchange="importarDatos(event)">
-      <button onclick="document.getElementById('importarArchivo').click()">Importar</button>
+  <header class="header">
+    <div class="header-content">
+      <h1>📊 Dashboard</h1>
+      <p>Panel de control de recursos</p>
+    </div>
+    <div class="utility-buttons">
+      <button id="loginBtn" class="add-btn">🔐 Iniciar sesión</button>
+      <button id="logoutBtn" class="add-btn" style="display: none;">🔓 Cerrar sesión</button>
+      <button id="saveAllBtn" class="add-btn">💾 Guardar todo</button>
     </div>
   </header>
-  <nav>
-    <ul class="tabs">
-      <li><a href="materiales-crudos.html">Materiales Crudos</a></li>
-      <li><a href="materiales-procesados.html">Materiales Procesados</a></li>
-      <li><a href="objetos.html">Objetos</a></li>
-      <li><a href="vehiculos.html">Vehículos</a></li>
-      <li><a href="armas.html">Armas</a></li>
-    </ul>
+
+  <nav class="nav-tabs">
+    <a class="tab-btn active" href="index.html">📊 Dashboard</a>
+    <a class="tab-btn" href="raw.html">🗿 Recursos en bruto</a>
+    <a class="tab-btn" href="refined.html">⚗️ Recursos refinados</a>
+    <a class="tab-btn" href="objects.html">🔧 Objetos</a>
+    <a class="tab-btn" href="vehicles.html">🚗 Vehículos</a>
+    <a class="tab-btn" href="weapons.html">⚔️ Armas</a>
   </nav>
-  <main>
-    <section id="dashboard">
-      <h2>Resumen del Inventario</h2>
-      <div class="card" id="lista-recursos">Materiales Crudos: (cargado al iniciar sesión)</div>
-      <div class="card" id="lista-procesados">Materiales Procesados: (cargado al iniciar sesión)</div>
-      <div class="card" id="lista-objetos">Objetos: (cargado al iniciar sesión)</div>
-      <div class="card" id="lista-vehiculos">Vehículos: (cargado al iniciar sesión)</div>
-      <div class="card" id="lista-armas">Armas: (cargado al iniciar sesión)</div>
-      <div class="card" id="lista-skills">Skills: (cargado al iniciar sesión)</div>
+
+  <main class="main-content">
+    <section class="tab-content active">
+      <div class="tab-header">
+        <h2>Resumen general</h2>
+      </div>
+
+      <div class="dashboard-summary">
+        <!-- Aquí se mostrarán los datos generales -->
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Aquí se mostrarán los items importantes -->
+      </div>
     </section>
   </main>
-  <script type="module" src="script.js"></script>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>Web creada por <strong>Roberto Dorado Rodríguez</strong> © 2025</p>
+    </div>
+  </footer>
 </body>
 </html>
