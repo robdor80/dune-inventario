@@ -2527,47 +2527,51 @@
 
         // Formularios
         function handleResourceSubmit(e) {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('resourceName').value.trim(),
-                category: document.getElementById('resourceCategory').value,
-                level: parseInt(document.getElementById('resourceLevel').value),
-                quantity: parseInt(document.getElementById('resourceQuantity').value),
-                image: document.getElementById('resourceImage').value.trim(),
-                notes: document.getElementById('resourceNotes').value.trim()
-            };
-            
-            // Validación
-            if (!formData.name || !formData.category) {
-                alert('Por favor, completa todos los campos obligatorios.');
-                return;
-            }
-            
-            const resources = editingType === 'raw' ? rawResources : refinedResources;
-            
-            // Verificar duplicados
-            if (!editingItem && resources.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
-                alert('Ya existe un recurso con ese nombre.');
-                return;
-            }
-            
-            if (editingItem) {
-                // Editar
-                Object.assign(editingItem, formData);
-            } else {
-                // Crear nuevo
-                formData.id = generateId();
-                resources.push(formData);
-            }
-            
-            saveToStorage();
-            renderTab(editingType);
-            renderTab('objects');
-            renderTab('vehicles');
-            renderTab('weapons');
-            closeAllModals();
-        }
+    e.preventDefault();
+
+    const type = editingType;
+    const resources = type === 'raw' ? rawResources : refinedResources;
+
+    const formData = {
+        name: document.getElementById('resourceName').value.trim(),
+        category: document.getElementById('resourceCategory').value,
+        level: parseInt(document.getElementById('resourceLevel').value),
+        quantity: parseInt(document.getElementById('resourceQuantity').value),
+        image: document.getElementById('resourceImage').value.trim(),
+        notes: document.getElementById('resourceNotes').value.trim()
+    };
+
+    if (
+        !type || !["raw", "refined"].includes(type) ||
+        !formData.name || formData.name === "undefined" ||
+        !formData.category || formData.category === "undefined" ||
+        isNaN(formData.level) ||
+        isNaN(formData.quantity)
+    ) {
+        alert("Por favor, completa correctamente todos los campos obligatorios.");
+        return;
+    }
+
+    if (!editingItem && resources.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
+        alert('Ya existe un recurso con ese nombre.');
+        return;
+    }
+
+    if (editingItem) {
+        Object.assign(editingItem, formData);
+    } else {
+        formData.id = generateId();
+        resources.push(formData);
+    }
+
+    saveToStorage();
+    renderTab(editingType);
+    renderTab('objects');
+    renderTab('vehicles');
+    renderTab('weapons');
+    closeAllModals();
+}
+
 
         function handleCraftingSubmit(e) {
             e.preventDefault();
