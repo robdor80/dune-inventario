@@ -1,4 +1,4 @@
-/* Reset y configuración base */
+﻿/* Reset y configuración base */
         * {
             margin: 0;
             padding: 0;
@@ -1203,3 +1203,26 @@
   color: #e2e8f0;
   font-weight: bold;
 }
+
+.user-session {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+#login-btn, #logout-btn {
+  background-color: #ffa726;
+  color: #000;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#user-info {
+  color: #e2e8f0;
+  font-weight: bold;
+}
+
