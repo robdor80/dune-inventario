@@ -1189,73 +1189,30 @@
             background: #ff8f00;
         }
     </style>
-
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import {
-    getAuth,
-    signInWithPopup,
-    GoogleAuthProvider,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
-    authDomain: "dune-inventario.firebaseapp.com",
-    projectId: "dune-inventario",
-    storageBucket: "dune-inventario.firebasestorage.app",
-    messagingSenderId: "26414027507",
-    appId: "1:26414027507:web:b8970fb32a837d7117dd86"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userName = document.getElementById("userName");
-
-  if (loginBtn && logoutBtn) {
-    loginBtn.addEventListener("click", () => {
-      signInWithPopup(auth, new GoogleAuthProvider());
-    });
-
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth);
-    });
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
-        userName.textContent = `Bienvenido, ${user.displayName}`;
-      } else {
-        loginBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
-        userName.textContent = "";
-      }
-    });
-  }
-</script>
-
 </head>
 <body>
     <!-- Header -->
-    <header class="header" style="display: flex; justify-content: space-between; align-items: center;">
-  <div class="header-content">
-    <h1>🧭 Dune Awakening Tracker</h1>
-    <p>Tu base de datos de recursos, vehículos, armas y habilidades</p>
-  </div>
-  <div class="header-right">
-    <span id="userName"></span>
-    <div class="auth-buttons">
-      <button class="auth-btn" id="loginBtn">Iniciar sesión con Google</button>
-      <button class="auth-btn" id="logoutBtn" style="display: none;">Cerrar sesión</button>
-    </div>
-  </div>
-</header>
+    <header class="header">
+        <div class="header-content">
+            <h1>🏜️ DUNE AWAKENING</h1>
+            <p>Rastreador de Inventario</p>
+        </div>
+        
+        <!-- Búsqueda Global -->
+        <div class="search-container">
+            <input type="text" id="globalSearch" placeholder="Buscar items..." class="search-input">
+            <button id="clearSearch" class="clear-btn">✕</button>
+        </div>
 
+        <!-- Botones de Utilidad -->
+        <div class="utility-buttons">
+            <button id="exportBtn" class="utility-btn">📊 Exportar</button>
+            <button id="importBtn" class="utility-btn">📥 Importar</button>
+            <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
+            <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+    </header>
 
     <!-- Navegación de Pestañas -->
     <nav class="nav-tabs">
