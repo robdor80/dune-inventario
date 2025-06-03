@@ -90,12 +90,18 @@ function openResourceModal(type) {
   document.getElementById("resourceForm").reset();
   modal.classList.add("show");
   modal.dataset.type = type;
+
+  const header = document.getElementById("mainHeader");
+  if (header) header.style.display = "none";
 }
 
 function closeAllModals() {
   document.querySelectorAll(".modal").forEach(modal => {
     modal.classList.remove("show");
   });
+
+  const header = document.getElementById("mainHeader");
+  if (header) header.style.display = "";
 }
 
 function handleResourceSubmit(e) {
