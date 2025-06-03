@@ -2286,27 +2286,30 @@
         }
 
         function filterCrafting(items, type) {
-            const categoryFilter = document.getElementById(`${type}CategoryFilter`).value;
-            const statusFilter = document.getElementById(`${type}StatusFilter`).value;
-            const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
-            
-            return items.filter(item => {
-                const matchesCategory = !categoryFilter || item.category === categoryFilter;
-                const matchesSearch = !searchTerm || 
-                    item.name.toLowerCase().includes(searchTerm) ||
-                    item.category.toLowerCase().includes(searchTerm) ||
-                    (item.notes && item.notes.toLowerCase().includes(searchTerm));
-                
-                let matchesStatus = true;
-                if (statusFilter) {
-                    const status = getCraftingStatus(item);
-                    matchesStatus = (statusFilter === 'can-craft' && status.canCraft) ||
-                                  (statusFilter === 'missing-materials' && !status.canCraft);
-                }
-                
-                return matchesCategory && matchesSearch && matchesStatus;
-            });
+    const categoryEl = document.getElementById(`${type}CategoryFilter`);
+    const statusEl = document.getElementById(`${type}StatusFilter`);
+    const categoryFilter = categoryEl ? categoryEl.value : "";
+    const statusFilter = statusEl ? statusEl.value : "";
+    const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+
+    return items.filter(item => {
+        const matchesCategory = !categoryFilter || item.category === categoryFilter;
+        const matchesSearch = !searchTerm || 
+            item.name.toLowerCase().includes(searchTerm) ||
+            item.category.toLowerCase().includes(searchTerm) ||
+            (item.notes && item.notes.toLowerCase().includes(searchTerm));
+
+        let matchesStatus = true;
+        if (statusFilter) {
+            const status = getCraftingStatus(item);
+            matchesStatus = (statusFilter === 'can-craft' && status.canCraft) ||
+                            (statusFilter === 'missing-materials' && !status.canCraft);
         }
+
+        return matchesCategory && matchesSearch && matchesStatus;
+    });
+}
+
 
         // Búsqueda
         function handleGlobalSearch() {
