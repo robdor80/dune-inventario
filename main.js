@@ -16,7 +16,6 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-// Inicialización de Firebase (ver firebase-config.js)
 import { firebaseConfig } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
@@ -82,67 +81,16 @@ if (saveBtn) {
 // ======================= RENDER DASHBOARD =======================
 function renderAllData() {
   // Aquí iría tu lógica para mostrar los datos en el Dashboard
-  // Puedes hacer una función tipo renderDashboard(allData);
 }
 
 // ======================= FUNCIONES POR PÁGINA =======================
 document.addEventListener("DOMContentLoaded", () => {
-  // Aquí puedes poner lógica específica para cada sección (raw, refined, etc.)
-});
+  const path = window.location.pathname;
 
-raw.html")) {
-    const rawKey = "duneRawResources";
-    const addBtn = document.getElementById("addRawBtn");
-    const container = document.getElementById("rawContainer");
-
-    function getLocalData() {
-      return JSON.parse(localStorage.getItem(rawKey)) || [];
-    }
-
-    function saveLocalData(data) {
-      localStorage.setItem(rawKey, JSON.stringify(data));
-    }
-
-    function renderRawResources() {
-      const data = getLocalData();
-      container.innerHTML = "";
-      data.forEach((item, index) => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        card.innerHTML = `
-          <div class="item-header">
-            <div class="item-info">
-              <h3>${item.nombre}</h3>
-              <span class="item-category">${item.categoria}</span>
-              <span class="item-level">Tier ${item.nivel}</span>
-            </div>
-          </div>
-          <div class="item-notes">${item.notas || ""}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    if (addBtn) {
-      addBtn.addEventListener("click", () => {
-        const nombre = prompt("Nombre del recurso:");
-        if (!nombre) return;
-
-        const categoria = prompt("Categoría:");
-        const nivel = prompt("Nivel (0-2):");
-        const notas = prompt("Notas:");
-
-        const nuevoItem = { nombre, categoria, nivel, notas };
-        const datosActuales = getLocalData();
-        datosActuales.push(nuevoItem);
-        saveLocalData(datosActuales);
-        renderRawResources();
-      });
-    }
-
-    renderRawResources();
+  // RAW PAGE
+  if (path.includes("raw.html")) {
+    handleGenericSection("raw", "duneRawResources", "addRawBtn", "rawContainer");
   }
-});
 
   // REFINED PAGE
   if (path.includes("refined.html")) {
@@ -179,7 +127,7 @@ raw.html")) {
     function renderItems() {
       const data = getLocalData();
       container.innerHTML = "";
-      data.forEach((item, index) => {
+      data.forEach((item) => {
         const card = document.createElement("div");
         card.className = "item-card";
         card.innerHTML = `
