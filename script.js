@@ -20,23 +20,25 @@ const db = getFirestore(app);
 const loginBtn = document.getElementById("loginBtn");
 const userName = document.getElementById("userName");
 
-loginBtn.addEventListener("click", () => {
-  if (auth.currentUser) {
-    signOut(auth);
-  } else {
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const user = result.user;
-        userName.textContent = `Hola, ${user.displayName}`;
-        loginBtn.textContent = "Cerrar sesión";
-        loadData(user.uid);
-      })
-      .catch((error) => {
-        alert("No se pudo iniciar sesión");
-        console.error(error);
-      });
-  }
-});
+if (loginBtn) {
+  loginBtn.addEventListener("click", () => {
+    if (auth.currentUser) {
+      signOut(auth);
+    } else {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user;
+          userName.textContent = `Hola, ${user.displayName}`;
+          loginBtn.textContent = "Cerrar sesión";
+          loadData(user.uid);
+        })
+        .catch((error) => {
+          alert("No se pudo iniciar sesión");
+          console.error(error);
+        });
+    }
+  });
+}
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -45,7 +47,7 @@ onAuthStateChanged(auth, (user) => {
     loadData(user.uid);
   } else {
     userName.textContent = "";
-    loginBtn.textContent = "Iniciar sesión con Google";
+    loginBtn.textContent = "Iniciar sesión";
   }
 });
 
@@ -65,7 +67,7 @@ async function saveData() {
   };
 
   await setDoc(doc(db, "usuarios", user.uid), data);
-  alert("Datos guardados.");
+  alert("Datos guardados en Firebase.");
 }
 
 async function loadData(uid) {
