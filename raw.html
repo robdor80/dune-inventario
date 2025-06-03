@@ -31,6 +31,58 @@
             <div class="tab-header">
                 <h2>🗿 Recursos en bruto</h2>
                 <button class="add-btn" id="addRawBtn">+ Añadir Recurso</button>
+                <!-- Modal para Añadir/Editar Recursos -->
+<div id="resourceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="resourceModalTitle">Añadir Recurso</h3>
+            <button class="close-btn">&times;</button>
+        </div>
+        <form id="resourceForm">
+            <div class="form-group">
+                <label for="resourceName">Nombre del Recurso:</label>
+                <input type="text" id="resourceName" required>
+            </div>
+            <div class="form-group">
+                <label for="resourceCategory">Categoría:</label>
+                <select id="resourceCategory" required>
+                    <option value="">Seleccionar categoría</option>
+                    <option value="Minerales">Minerales</option>
+                    <option value="Orgánicos">Orgánicos</option>
+                    <option value="Combustibles">Combustibles</option>
+                    <option value="Lingotes">Lingotes</option>
+                    <option value="Componentes">Componentes</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="resourceLevel">Tier:</label>
+                <select id="resourceLevel" required>
+                    <option value="0">Tier 0</option>
+                    <option value="1">Tier 1</option>
+                    <option value="2">Tier 2</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="resourceQuantity">Cantidad:</label>
+                <input type="number" id="resourceQuantity" min="0" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="resourceImage">URL de Imagen:</label>
+                <input type="url" id="resourceImage" placeholder="https://ejemplo.com/imagen.jpg">
+            </div>
+            <div class="form-group">
+                <label for="resourceNotes">Notas (opcional):</label>
+                <textarea id="resourceNotes" rows="3"></textarea>
+            </div>
+            <div class="form-buttons">
+                <button type="submit" class="submit-btn">Guardar</button>
+                <button type="button" class="cancel-btn">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
             </div>
 
             <div class="filters">
