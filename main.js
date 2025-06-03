@@ -79,7 +79,49 @@ if (saveBtn) {
 
 // ======================= RENDER DASHBOARD =======================
 function renderAllData() {
-  // Implementa aquí el render del dashboard si lo necesitas
+  if (!document.getElementById("dashboard")) return;
+
+  const types = [
+    { key: "duneRawResources", label: "Recursos Brutos" },
+    { key: "duneRefinedResources", label: "Recursos Refinados" },
+    { key: "duneObjects", label: "Objetos" },
+    { key: "duneVehicles", label: "Vehículos" },
+    { key: "duneWeapons", label: "Armas" }
+  ];
+
+  const resumenContainer = document.getElementById("dashboardResumen");
+  const listadoContainer = document.getElementById("dashboardListado");
+
+  if (resumenContainer) resumenContainer.innerHTML = "";
+  if (listadoContainer) listadoContainer.innerHTML = "";
+
+  types.forEach(({ key, label }) => {
+    const items = JSON.parse(localStorage.getItem(key)) || [];
+
+    // Tarjeta resumen
+    if (resumenContainer) {
+      const resumen = document.createElement("div");
+      resumen.className = "summary-item";
+      resumen.innerHTML = `
+        <div class="summary-number">${items.length}</div>
+        <div class="summary-label">${label}</div>
+      `;
+      resumenContainer.appendChild(resumen);
+    }
+
+    // Detalle listado
+    if (listadoContainer && items.length > 0) {
+      const grupo = document.createElement("div");
+      grupo.className = "dashboard-card";
+      grupo.innerHTML = `
+        <div class="card-header"><h3>${label}</h3></div>
+        <div class="card-content">
+          ${items.map(i => `<p><strong>${i.nombre}</strong> - ${i.categoria} (Tier ${i.nivel}) - ${i.cantidad} u.</p>`).join('')}
+        </div>
+      `;
+      listadoContainer.appendChild(grupo);
+    }
+  });
 }
 
 // ======================= MODALES =======================
@@ -99,7 +141,6 @@ function closeAllModals() {
   document.querySelectorAll(".modal").forEach(modal => {
     modal.classList.remove("show");
   });
-
   const header = document.getElementById("mainHeader");
   if (header) header.style.display = "";
 }
@@ -133,7 +174,8 @@ function handleResourceSubmit(e) {
   localStorage.setItem(key, JSON.stringify(actuales));
 
   closeAllModals();
-  location.reload(); // o reemplázalo por render dinámico si quieres
+  if (document.getElementById("dashboard")) renderAllData();
+  else location.reload();
 }
 
 // ======================= DETECCIÓN DE PÁGINA =======================
@@ -149,7 +191,41 @@ document.addEventListener("DOMContentLoaded", () => {
     renderItems("duneRawResources", "rawContainer");
   }
 
-  // Otras pestañas (refined, objects, etc.) puedes repetir este mismo patrón si lo deseas
+  if (path.includes("refined.html")) {
+    document.getElementById("addRefinedBtn")?.addEventListener("click", () => openResourceModal("refined"));
+    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    renderItems("duneRefinedResources", "refinedContainer");
+  }
+
+  if (path.includes("objects.html")) {
+    document.getElementById("addObjectBtn")?.addEventListener("click", () => openResourceModal("objects"));
+    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    renderItems("duneObjects", "objectsContainer");
+  }
+
+  if (path.includes("vehicles.html")) {
+    document.getElementById("addVehicleBtn")?.addEventListener("click", () => openResourceModal("vehicles"));
+    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    renderItems("duneVehicles", "vehiclesContainer");
+  }
+
+  if (path.includes("weapons.html")) {
+    document.getElementById("addWeaponBtn")?.addEventListener("click", () => openResourceModal("weapons"));
+    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    renderItems("duneWeapons", "weaponsContainer");
+  }
 });
 
 function renderItems(storageKey, containerId) {
