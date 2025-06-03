@@ -1,7 +1,19 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
   authDomain: "dune-inventario.firebaseapp.com",
@@ -13,70 +25,93 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-const loginBtn = document.getElementById("loginBtn");
-const userName = document.getElementById("userName");
+let usuario = null;
 
-if (loginBtn) {
-  loginBtn.addEventListener("click", () => {
-    if (auth.currentUser) {
-      signOut(auth);
-    } else {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user;
-          userName.textContent = `Hola, ${user.displayName}`;
-          loginBtn.textContent = "Cerrar sesión";
-          loadData(user.uid);
-        })
-        .catch((error) => {
-          alert("No se pudo iniciar sesión");
-          console.error(error);
-        });
-    }
-  });
-}
-
-onAuthStateChanged(auth, (user) => {
+// Detectar login
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    userName.textContent = `Hola, ${user.displayName}`;
-    loginBtn.textContent = "Cerrar sesión";
-    loadData(user.uid);
-  } else {
-    userName.textContent = "";
-    loginBtn.textContent = "Iniciar sesión";
+    usuario = user;
+    document.getElementById("userName").textContent = user.displayName;
+    if (document.getElementById("dashboard")) cargarTodoEnDashboard();
   }
 });
 
-async function saveData() {
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Inicia sesión primero.");
-    return;
+// Botón login
+document.getElementById("loginBtn")?.addEventListener("click", async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    alert("Error al iniciar sesión");
   }
+});
 
-  const data = {
-    recursos: document.getElementById("lista-recursos")?.innerHTML || "",
-    objetos: document.getElementById("lista-objetos")?.innerHTML || "",
-    vehiculos: document.getElementById("lista-vehiculos")?.innerHTML || "",
-    armas: document.getElementById("lista-armas")?.innerHTML || "",
-    skills: document.getElementById("lista-skills")?.innerHTML || "",
+// Guardar todo
+window.saveAll = async () => {
+  if (!usuario) return alert("Inicia sesión");
+  const datos = {
+    crudos: localStorage.getItem("materiales_crudos") || "",
+    procesados: localStorage.getItem("materiales_procesados") || "",
+    objetos: localStorage.getItem("objetos") || "",
+    vehiculos: localStorage.getItem("vehiculos") || "",
+    armas: localStorage.getItem("armas") || "",
+    skills: localStorage.getItem("skills") || ""
   };
+  await setDoc(doc(db, "usuarios", usuario.uid), datos);
+  alert("Datos guardados en Firebase");
+};
 
-  await setDoc(doc(db, "usuarios", user.uid), data);
-  alert("Datos guardados en Firebase.");
-}
+// Guardar solo una sección
+window.saveSectionData = async (id) => {
+  if (!usuario) return alert("Inicia sesión");
+  const contenedor = document.getElementById("contenedor-" + id);
+  const contenido = contenedor?.innerHTML || "";
+  localStorage.setItem(id, contenido);
+  const ref = doc(db, "usuarios", usuario.uid);
+  const snap = await getDoc(ref);
+  const datos = snap.exists() ? snap.data() : {};
+  datos[id.replace(/_/g, "")] = contenido;
+  await setDoc(ref, datos);
+  alert("Sección guardada");
+};
 
-async function loadData(uid) {
-  const docSnap = await getDoc(doc(db, "usuarios", uid));
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    if (document.getElementById("lista-recursos")) document.getElementById("lista-recursos").innerHTML = data.recursos || "";
-    if (document.getElementById("lista-objetos")) document.getElementById("lista-objetos").innerHTML = data.objetos || "";
-    if (document.getElementById("lista-vehiculos")) document.getElementById("lista-vehiculos").innerHTML = data.vehiculos || "";
-    if (document.getElementById("lista-armas")) document.getElementById("lista-armas").innerHTML = data.armas || "";
-    if (document.getElementById("lista-skills")) document.getElementById("lista-skills").innerHTML = data.skills || "";
-  }
+// Exportar
+window.exportarDatos = async () => {
+  if (!usuario) return alert("Inicia sesión");
+  const ref = doc(db, "usuarios", usuario.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return alert("No hay datos que exportar");
+  const datos = snap.data();
+  const blob = new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "dune_backup.json";
+  a.click();
+};
+
+// Importar
+window.importarDatos = async (event) => {
+  const file = event.target.files[0];
+  if (!file || !usuario) return;
+  const text = await file.text();
+  const datos = JSON.parse(text);
+  await setDoc(doc(db, "usuarios", usuario.uid), datos);
+  alert("Datos importados");
+  location.reload();
+};
+
+// Cargar en Dashboard
+async function cargarTodoEnDashboard() {
+  const ref = doc(db, "usuarios", usuario.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const datos = snap.data();
+  document.getElementById("lista-recursos").textContent = "Materiales Crudos: " + (datos.crudos?.length || 0);
+  document.getElementById("lista-procesados").textContent = "Materiales Procesados: " + (datos.procesados?.length || 0);
+  document.getElementById("lista-objetos").textContent = "Objetos: " + (datos.objetos?.length || 0);
+  document.getElementById("lista-vehiculos").textContent = "Vehículos: " + (datos.vehiculos?.length || 0);
+  document.getElementById("lista-armas").textContent = "Armas: " + (datos.armas?.length || 0);
+  document.getElementById("lista-skills").textContent = "Skills: " + (datos.skills?.length || 0);
 }
