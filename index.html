@@ -5,453 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dune Awakening - Rastreador de Inventario</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="module" src="script.js"></script>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1>🏜️ DUNE AWAKENING</h1>
-            <p>Rastreador de Inventario</p>
-        </div>
-        
-        <!-- Búsqueda Global -->
-        <div class="search-container">
-            <input type="text" id="globalSearch" placeholder="Buscar items..." class="search-input">
-            <button id="clearSearch" class="clear-btn">✕</button>
-        </div>
-
-        <!-- Botones de Utilidad -->
-        <div class="utility-buttons">
-            <button id="exportBtn" class="utility-btn">📊 Exportar</button>
-            <button id="importBtn" class="utility-btn">📥 Importar</button>
-            <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
-            <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;">
+            <h1>Dune Awakening - Rastreador</h1>
+            <p id="user-info">No has iniciado sesión.</p>
+            <button id="login-btn">Iniciar sesión con Google</button>
+            <button id="logout-btn" style="display:none;">Cerrar sesión</button>
         </div>
     </header>
 
-    <!-- Navegación de Pestañas -->
-    <nav class="nav-tabs">
-        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-        <button class="tab-btn" data-tab="raw">🗿 Recursos en bruto</button>
-        <button class="tab-btn" data-tab="refined">⚗️ Recursos refinados</button>
-        <button class="tab-btn" data-tab="objects">🔧 Objetos</button>
-        <button class="tab-btn" data-tab="vehicles">🚗 Vehículos</button>
-        <button class="tab-btn" data-tab="weapons">⚔️ Armas</button>
-    </nav>
-
-    <!-- Contenido Principal -->
+    <!-- CONTENIDO ORIGINAL DEL USUARIO -->
     <main class="main-content">
-        
-        <!-- Pestaña Dashboard -->
-        <section id="dashboard-tab" class="tab-content active">
-            <div class="tab-header">
-                <h2>📊 Dashboard</h2>
-                <div class="dashboard-summary">
-                    <div class="summary-item">
-                        <span class="summary-number" id="totalItems">0</span>
-                        <span class="summary-label">Total Items</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-number" id="totalObjectives">0</span>
-                        <span class="summary-label">Objetivos</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-number" id="craftableItems">0</span>
-                        <span class="summary-label">Puedo Crear</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-grid">
-                <!-- Recursos Escasos -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>⚠️ Recursos Escasos</h3>
-                        <span class="card-subtitle">Cantidad < 10</span>
-                    </div>
-                    <div class="card-content" id="lowResourcesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Items Creables -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🔧 Puedes Crear</h3>
-                        <span class="card-subtitle">Materiales disponibles</span>
-                    </div>
-                    <div class="card-content" id="craftableItemsContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Objetivos Pendientes -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🎯 Objetivos Pendientes</h3>
-                        <span class="card-subtitle">Por completar</span>
-                    </div>
-                    <div class="card-content" id="pendingObjectivesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Estadísticas por Categoría -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>📈 Por Categorías</h3>
-                        <span class="card-subtitle">Distribución de recursos</span>
-                    </div>
-                    <div class="card-content" id="categoryStatsContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Top 5 Recursos -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🥇 Top 5 Recursos</h3>
-                        <span class="card-subtitle">Más abundantes</span>
-                    </div>
-                    <div class="card-content" id="topResourcesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Estado del Inventario -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>⏰ Estado del Inventario</h3>
-                        <span class="card-subtitle">Resumen general</span>
-                    </div>
-                    <div class="card-content" id="inventoryStatusContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'dashboard')">Dashboard</button>
+            <button class="tab-button" onclick="openTab(event, 'recursos')">Recursos</button>
+            <button class="tab-button" onclick="openTab(event, 'objetos')">Objetos</button>
+            <button class="tab-button" onclick="openTab(event, 'vehiculos')">Vehículos</button>
+            <button class="tab-button" onclick="openTab(event, 'armas')">Armas</button>
+            <button class="tab-button" onclick="openTab(event, 'skills')">Skills</button>
+        </div>
 
-        <!-- Pestaña Recursos en bruto -->
-        <section id="raw-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>🗿 Recursos en bruto</h2>
-                <button class="add-btn" id="addRawBtn">+ Añadir Recurso</button>
-            </div>
-            
-            <!-- Filtros -->
-            <div class="filters">
-                <select id="rawCategoryFilter" class="filter-select">
-                    <option value="">Todas las categorías</option>
-                    <option value="Minerales">Minerales</option>
-                    <option value="Orgánicos">Orgánicos</option>
-                    <option value="Combustibles">Combustibles</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <select id="rawLevelFilter" class="filter-select">
-                    <option value="">Todos los tiers</option>
-                    <option value="0">Tier 0</option>
-                    <option value="1">Tier 1</option>
-                    <option value="2">Tier 2</option>
-                </select>
-            </div>
-
-            <div id="rawContainer" class="items-container">
-                <!-- Items se cargan dinámicamente -->
-            </div>
-        </section>
-
-        <!-- Pestaña Recursos refinados -->
-        <section id="refined-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>⚗️ Recursos refinados</h2>
-                <button class="add-btn" id="addRefinedBtn">+ Añadir Recurso</button>
-            </div>
-            
-            <!-- Filtros -->
-            <div class="filters">
-                <select id="refinedCategoryFilter" class="filter-select">
-                    <option value="">Todas las categorías</option>
-                    <option value="Lingotes">Lingotes</option>
-                    <option value="Combustibles">Combustibles</option>
-                    <option value="Componentes">Componentes</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <select id="refinedLevelFilter" class="filter-select">
-                    <option value="">Todos los tiers</option>
-                    <option value="0">Tier 0</option>
-                    <option value="1">Tier 1</option>
-                    <option value="2">Tier 2</option>
-                </select>
-            </div>
-
-            <div id="refinedContainer" class="items-container">
-                <!-- Items se cargan dinámicamente -->
-            </div>
-        </section>
-
-        <!-- Pestaña Objetos -->
-        <section id="objects-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>🔧 Objetos</h2>
-                <button class="add-btn" id="addObjectBtn">+ Añadir Objeto</button>
-            </div>
-            
-            <!-- Filtros -->
-            <div class="filters">
-                <select id="objectCategoryFilter" class="filter-select">
-                    <option value="">Todas las categorías</option>
-                    <option value="Herramientas">Herramientas</option>
-                    <option value="Consumibles">Consumibles</option>
-                    <option value="Estructuras">Estructuras</option>
-                    <option value="Componentes">Componentes</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <select id="objectStatusFilter" class="filter-select">
-                    <option value="">Todos los estados</option>
-                    <option value="can-craft">Puedo crear</option>
-                    <option value="missing-materials">Faltan materiales</option>
-                </select>
-            </div>
-
-            <div id="objectContainer" class="items-container">
-                <!-- Items se cargan dinámicamente -->
-            </div>
-        </section>
-
-        <!-- Pestaña Vehículos -->
-        <section id="vehicles-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>🚗 Vehículos</h2>
-                <button class="add-btn" id="addVehicleBtn">+ Añadir Vehículo</button>
-            </div>
-            
-            <!-- Filtros -->
-            <div class="filters">
-                <select id="vehicleCategoryFilter" class="filter-select">
-                    <option value="">Todas las categorías</option>
-                    <option value="Ornitópteros">Ornitópteros</option>
-                    <option value="Vehículos Terrestres">Vehículos Terrestres</option>
-                    <option value="Naves">Naves</option>
-                    <option value="Módulos">Módulos</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <select id="vehicleStatusFilter" class="filter-select">
-                    <option value="">Todos los estados</option>
-                    <option value="can-craft">Puedo crear</option>
-                    <option value="missing-materials">Faltan materiales</option>
-                </select>
-            </div>
-
-            <div id="vehicleContainer" class="items-container">
-                <!-- Items se cargan dinámicamente -->
-            </div>
-        </section>
-
-        <!-- Pestaña Armas -->
-        <section id="weapons-tab" class="tab-content">
-            <div class="tab-header">
-                <h2>⚔️ Armas</h2>
-                <button class="add-btn" id="addWeaponBtn">+ Añadir Arma</button>
-            </div>
-            
-            <!-- Filtros -->
-            <div class="filters">
-                <select id="weaponCategoryFilter" class="filter-select">
-                    <option value="">Todas las categorías</option>
-                    <option value="Cuchillos">Cuchillos</option>
-                    <option value="Rifles">Rifles</option>
-                    <option value="Pistolas">Pistolas</option>
-                    <option value="Explosivos">Explosivos</option>
-                    <option value="Láseres">Láseres</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <select id="weaponStatusFilter" class="filter-select">
-                    <option value="">Todos los estados</option>
-                    <option value="can-craft">Puedo crear</option>
-                    <option value="missing-materials">Faltan materiales</option>
-                </select>
-            </div>
-
-            <div id="weaponContainer" class="items-container">
-                <!-- Items se cargan dinámicamente -->
-            </div>
-        </section>
+        <div id="dashboard" class="tab-content" style="display:block;">
+            <h2>Dashboard</h2>
+            <div id="dashboard-data">Cargando datos del usuario...</div>
+        </div>
+        <div id="recursos" class="tab-content">
+            <h2>Recursos</h2>
+            <textarea id="recursos-data" rows="10" cols="50" placeholder="Introduce tus recursos aquí..."></textarea>
+        </div>
+        <div id="objetos" class="tab-content">
+            <h2>Objetos</h2>
+            <textarea id="objetos-data" rows="10" cols="50" placeholder="Introduce tus objetos aquí..."></textarea>
+        </div>
+        <div id="vehiculos" class="tab-content">
+            <h2>Vehículos</h2>
+            <textarea id="vehiculos-data" rows="10" cols="50" placeholder="Introduce tus vehículos aquí..."></textarea>
+        </div>
+        <div id="armas" class="tab-content">
+            <h2>Armas</h2>
+            <textarea id="armas-data" rows="10" cols="50" placeholder="Introduce tus armas aquí..."></textarea>
+        </div>
+        <div id="skills" class="tab-content">
+            <h2>Skills</h2>
+            <textarea id="skills-data" rows="10" cols="50" placeholder="Introduce tus skills aquí..."></textarea>
+        </div>
+        <br>
+        <button onclick="saveData()">💾 Guardar en Firebase</button>
     </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>Web creada por <strong>Roberto Dorado Rodríguez</strong> © 2025</p>
-        </div>
-    </footer>
-
-    <!-- Modal para Añadir/Editar Recursos -->
-    <div id="resourceModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="resourceModalTitle">Añadir Recurso</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <form id="resourceForm">
-                <div class="form-group">
-                    <label for="resourceName">Nombre del Recurso:</label>
-                    <input type="text" id="resourceName" required>
-                </div>
-                <div class="form-group">
-                    <label for="resourceCategory">Categoría:</label>
-                    <select id="resourceCategory" required>
-                        <option value="">Seleccionar categoría</option>
-                        <option value="Minerales">Minerales</option>
-                        <option value="Orgánicos">Orgánicos</option>
-                        <option value="Combustibles">Combustibles</option>
-                        <option value="Lingotes">Lingotes</option>
-                        <option value="Componentes">Componentes</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="resourceLevel">Tier:</label>
-                    <select id="resourceLevel" required>
-                        <option value="0">Tier 0</option>
-                        <option value="1">Tier 1</option>
-                        <option value="2">Tier 2</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="resourceQuantity">Cantidad:</label>
-                    <input type="number" id="resourceQuantity" min="0" value="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="resourceImage">URL de Imagen:</label>
-                    <input type="url" id="resourceImage" placeholder="https://ejemplo.com/imagen.jpg">
-                </div>
-                <div class="form-group">
-                    <label for="resourceNotes">Notas (opcional):</label>
-                    <textarea id="resourceNotes" rows="3"></textarea>
-                </div>
-                <div class="form-buttons">
-                    <button type="submit" class="submit-btn">Guardar</button>
-                    <button type="button" class="cancel-btn">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal para Añadir/Editar Objetos/Vehículos/Armas -->
-    <div id="craftingModal" class="modal">
-        <div class="modal-content crafting-modal">
-            <div class="modal-header">
-                <h3 id="craftingModalTitle">Añadir Objeto</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <form id="craftingForm">
-                <div class="form-group">
-                    <label for="craftingName">Nombre:</label>
-                    <input type="text" id="craftingName" required>
-                </div>
-                <div class="form-group">
-                    <label for="craftingCategory">Categoría:</label>
-                    <select id="craftingCategory" required>
-                        <option value="">Seleccionar categoría</option>
-                        <!-- Las opciones se llenan dinámicamente según el tipo -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="craftingImage">URL de Imagen:</label>
-                    <input type="url" id="craftingImage" placeholder="https://ejemplo.com/imagen.jpg">
-                </div>
-                <div class="form-group">
-                    <label for="craftingTool">Herramienta Necesaria:</label>
-                    <select id="craftingTool">
-                        <option value="">Ninguna</option>
-                        <option value="Fabricator">Fabricator</option>
-                        <option value="Workbench">Workbench</option>
-                        <option value="Refinery">Refinery</option>
-                        <option value="Constructor">Constructor</option>
-                        <option value="Advanced Fabricator">Advanced Fabricator</option>
-                        <option value="Vehicle Assembly">Vehicle Assembly</option>
-                        <option value="Weapon Forge">Weapon Forge</option>
-                        <option value="Other">Otra</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="craftingTime">Tiempo (segundos):</label>
-                        <input type="number" id="craftingTime" min="0" value="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="craftingYield">Produce (cantidad):</label>
-                        <input type="number" id="craftingYield" min="1" value="1">
-                    </div>
-                </div>
-                
-                <!-- Receta (Materiales) -->
-                <div class="form-group">
-                    <label>Materiales Necesarios:</label>
-                    <div id="recipeContainer">
-                        <!-- Materiales se añaden dinámicamente -->
-                    </div>
-                    <button type="button" id="addMaterialBtn" class="add-material-btn">+ Añadir Material</button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="craftingNotes">Notas (opcional):</label>
-                    <textarea id="craftingNotes" rows="3"></textarea>
-                </div>
-                <div class="form-buttons">
-                    <button type="submit" class="submit-btn">Guardar</button>
-                    <button type="button" class="cancel-btn">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Calculadora -->
-    <div id="calculatorModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Calculadora de Creación</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="calculator-content">
-                <div class="form-group">
-                    <label for="calcItem">Objeto a crear:</label>
-                    <select id="calcItem">
-                        <option value="">Seleccionar objeto</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="calcQuantity">Cantidad deseada:</label>
-                    <input type="number" id="calcQuantity" min="1" value="1">
-                </div>
-                <button id="calculateBtn" class="submit-btn">Calcular</button>
-                <div id="calculatorResults" class="calculator-results">
-                    <!-- Resultados aparecen aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Objetivos -->
-    <div id="objectivesModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Lista de Objetivos</h3>
-                <button class="close-btn">&times;</button>
-            </div>
-            <div class="objectives-content">
-                <div class="form-group">
-                    <input type="text" id="newObjective" placeholder="Añadir nuevo objetivo...">
-                    <button id="addObjectiveBtn" class="add-btn">Añadir</button>
-                </div>
-                <div id="objectivesList" class="objectives-list">
-                    <!-- Objetivos aparecen aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
