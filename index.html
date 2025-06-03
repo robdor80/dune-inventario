@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dune Awakening - Rastreador de Inventario</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="script.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="header-content">
             <h1>Dune Awakening - Rastreador</h1>
             <p id="user-info">No has iniciado sesión.</p>
-            <button id="login-btn">Iniciar sesión con Google</button>
-            <button id="logout-btn" style="display:none;">Cerrar sesión</button>
+            <button id="login-btn" onclick="loginWithGoogle()">Iniciar sesión con Google</button>
+            <button id="logout-btn" onclick="logout()" style="display:none;">Cerrar sesión</button>
         </div>
     </header>
 
-    <!-- CONTENIDO ORIGINAL DEL USUARIO -->
     <main class="main-content">
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'dashboard')">Dashboard</button>
@@ -55,5 +53,7 @@
         <br>
         <button onclick="saveData()">💾 Guardar en Firebase</button>
     </main>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
