@@ -352,30 +352,28 @@ body {
   top: 0;
   width: 100%;
   height: 100%;
+  overflow-y: auto;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
-  justify-content: center;
-  align-items: center;
-  overflow-y: auto;
-  padding: 1rem;
+  padding: 2rem 1rem;
 }
 
 .modal.show {
-  display: flex;
+  display: block;
 }
+
 
 .modal-content {
   background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
   border: 2px solid #4a5568;
   border-radius: 15px;
   padding: 2rem;
-  width: 90%;
+  width: 100%;
   max-width: 600px;
+  margin: 5vh auto; /* margen superior e inferior para centrar con scroll */
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  max-height: 90vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
+
 
 
 
