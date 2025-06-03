@@ -98,7 +98,6 @@ function renderAllData() {
   types.forEach(({ key, label }) => {
     const items = JSON.parse(localStorage.getItem(key)) || [];
 
-    // Tarjeta resumen
     if (resumenContainer) {
       const resumen = document.createElement("div");
       resumen.className = "summary-item";
@@ -109,7 +108,6 @@ function renderAllData() {
       resumenContainer.appendChild(resumen);
     }
 
-    // Detalle listado
     if (listadoContainer && items.length > 0) {
       const grupo = document.createElement("div");
       grupo.className = "dashboard-card";
@@ -157,6 +155,11 @@ function handleResourceSubmit(e) {
   const imagen = document.getElementById("resourceImage").value;
   const notas = document.getElementById("resourceNotes").value;
 
+  if (!nombre || !categoria || !nivel || !cantidad) {
+    alert("Por favor, completa todos los campos obligatorios.");
+    return;
+  }
+
   const nuevo = { nombre, categoria, nivel, cantidad, imagen, notas };
 
   const key = {
@@ -174,58 +177,18 @@ function handleResourceSubmit(e) {
   localStorage.setItem(key, JSON.stringify(actuales));
 
   closeAllModals();
-  if (document.getElementById("dashboard")) renderAllData();
-  else location.reload();
+  renderItems(key, `${type}Container`);
+  renderAllData();
 }
 
-// ======================= DETECCIÓN DE PÁGINA =======================
+// ======================= INICIALIZACIÓN index.html =======================
 document.addEventListener("DOMContentLoaded", () => {
-  const path = window.location.pathname;
-
-  if (path.includes("raw.html")) {
-    document.getElementById("addRawBtn")?.addEventListener("click", () => openResourceModal("raw"));
-    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
-    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
-      btn.addEventListener("click", closeAllModals);
-    });
-    renderItems("duneRawResources", "rawContainer");
-  }
-
-  if (path.includes("refined.html")) {
-    document.getElementById("addRefinedBtn")?.addEventListener("click", () => openResourceModal("refined"));
-    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
-    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
-      btn.addEventListener("click", closeAllModals);
-    });
-    renderItems("duneRefinedResources", "refinedContainer");
-  }
-
-  if (path.includes("objects.html")) {
-    document.getElementById("addObjectBtn")?.addEventListener("click", () => openResourceModal("objects"));
-    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
-    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
-      btn.addEventListener("click", closeAllModals);
-    });
-    renderItems("duneObjects", "objectsContainer");
-  }
-
-  if (path.includes("vehicles.html")) {
-    document.getElementById("addVehicleBtn")?.addEventListener("click", () => openResourceModal("vehicles"));
-    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
-    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
-      btn.addEventListener("click", closeAllModals);
-    });
-    renderItems("duneVehicles", "vehiclesContainer");
-  }
-
-  if (path.includes("weapons.html")) {
-    document.getElementById("addWeaponBtn")?.addEventListener("click", () => openResourceModal("weapons"));
-    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
-    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
-      btn.addEventListener("click", closeAllModals);
-    });
-    renderItems("duneWeapons", "weaponsContainer");
-  }
+  document.getElementById("addRawBtn")?.addEventListener("click", () => openResourceModal("raw"));
+  document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+  document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+    btn.addEventListener("click", closeAllModals);
+  });
+  renderItems("duneRawResources", "rawContainer");
 });
 
 function renderItems(storageKey, containerId) {
@@ -245,9 +208,8 @@ function renderItems(storageKey, containerId) {
           <span class="item-level">Tier ${item.nivel}</span>
           <span class="item-quantity">${item.cantidad} u.</span>
         </div>
-        ${item.imagen ? `<img src="${item.imagen}" alt="${item.nombre}" class="item-image">` : ""}
       </div>
-      <div class="item-notes">${item.notas || ""}</div>
+      <div class="item-notes">${item.notas || "Sin notas adicionales."}</div>
     `;
     container.appendChild(card);
   });
