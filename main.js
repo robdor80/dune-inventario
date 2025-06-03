@@ -86,10 +86,13 @@ function renderAllData() {
 function openResourceModal(type) {
   const modal = document.getElementById("resourceModal");
   if (!modal) return;
-  modal.dataset.type = type;
+
+  // Limpiar formulario
   document.getElementById("resourceForm").reset();
-  modal.style.display = "block";
+  modal.style.display = "flex";
+  modal.dataset.type = type;
 }
+
 
 function closeAllModals() {
   document.querySelectorAll(".modal").forEach(modal => {
