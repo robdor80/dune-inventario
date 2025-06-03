@@ -89,3 +89,130 @@ function renderAllData() {
 document.addEventListener("DOMContentLoaded", () => {
   // Aquí puedes poner lógica específica para cada sección (raw, refined, etc.)
 });
+
+raw.html")) {
+    const rawKey = "duneRawResources";
+    const addBtn = document.getElementById("addRawBtn");
+    const container = document.getElementById("rawContainer");
+
+    function getLocalData() {
+      return JSON.parse(localStorage.getItem(rawKey)) || [];
+    }
+
+    function saveLocalData(data) {
+      localStorage.setItem(rawKey, JSON.stringify(data));
+    }
+
+    function renderRawResources() {
+      const data = getLocalData();
+      container.innerHTML = "";
+      data.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div class="item-header">
+            <div class="item-info">
+              <h3>${item.nombre}</h3>
+              <span class="item-category">${item.categoria}</span>
+              <span class="item-level">Tier ${item.nivel}</span>
+            </div>
+          </div>
+          <div class="item-notes">${item.notas || ""}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        const nombre = prompt("Nombre del recurso:");
+        if (!nombre) return;
+
+        const categoria = prompt("Categoría:");
+        const nivel = prompt("Nivel (0-2):");
+        const notas = prompt("Notas:");
+
+        const nuevoItem = { nombre, categoria, nivel, notas };
+        const datosActuales = getLocalData();
+        datosActuales.push(nuevoItem);
+        saveLocalData(datosActuales);
+        renderRawResources();
+      });
+    }
+
+    renderRawResources();
+  }
+});
+
+  // REFINED PAGE
+  if (path.includes("refined.html")) {
+    handleGenericSection("refined", "duneRefinedResources", "addRefinedBtn", "refinedContainer");
+  }
+
+  // OBJECTS PAGE
+  if (path.includes("objects.html")) {
+    handleGenericSection("objects", "duneObjects", "addObjectBtn", "objectsContainer");
+  }
+
+  // VEHICLES PAGE
+  if (path.includes("vehicles.html")) {
+    handleGenericSection("vehicles", "duneVehicles", "addVehicleBtn", "vehiclesContainer");
+  }
+
+  // WEAPONS PAGE
+  if (path.includes("weapons.html")) {
+    handleGenericSection("weapons", "duneWeapons", "addWeaponBtn", "weaponsContainer");
+  }
+
+  function handleGenericSection(type, storageKey, addBtnId, containerId) {
+    const addBtn = document.getElementById(addBtnId);
+    const container = document.getElementById(containerId);
+
+    function getLocalData() {
+      return JSON.parse(localStorage.getItem(storageKey)) || [];
+    }
+
+    function saveLocalData(data) {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+
+    function renderItems() {
+      const data = getLocalData();
+      container.innerHTML = "";
+      data.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div class="item-header">
+            <div class="item-info">
+              <h3>${item.nombre}</h3>
+              <span class="item-category">${item.categoria}</span>
+              <span class="item-level">Tier ${item.nivel}</span>
+            </div>
+          </div>
+          <div class="item-notes">${item.notas || ""}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    if (addBtn) {
+      addBtn.addEventListener("click", () => {
+        const nombre = prompt("Nombre del recurso:");
+        if (!nombre) return;
+
+        const categoria = prompt("Categoría:");
+        const nivel = prompt("Nivel (0-2):");
+        const notas = prompt("Notas:");
+
+        const nuevoItem = { nombre, categoria, nivel, notas };
+        const datosActuales = getLocalData();
+        datosActuales.push(nuevoItem);
+        saveLocalData(datosActuales);
+        renderItems();
+      });
+    }
+
+    renderItems();
+  }
+});
