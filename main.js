@@ -87,16 +87,14 @@ function openResourceModal(type) {
   const modal = document.getElementById("resourceModal");
   if (!modal) return;
 
-  // Limpiar formulario
   document.getElementById("resourceForm").reset();
-  modal.style.display = "flex";
+  modal.classList.add("show");
   modal.dataset.type = type;
 }
 
-
 function closeAllModals() {
   document.querySelectorAll(".modal").forEach(modal => {
-    modal.style.display = "none";
+    modal.classList.remove("show");
   });
 }
 
