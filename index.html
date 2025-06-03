@@ -8,6 +8,26 @@
 
 <link href="styles.css" rel="stylesheet"/></head>
 <body>
+
+<div id="login-block" style="
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+">
+  <button id="loginBtn" style="background-color: #ffa726; color: black; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">
+    Iniciar sesión
+  </button>
+  <button onclick='saveData()' style="background-color: #ffa726; color: black; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 0.9rem;">
+    💾 Guardar
+  </button>
+  <span id="userName" style="font-size: 0.8rem; color: #ddd;"></span>
+</div>
+
 <div id="login-block" style="
   position: fixed;
   top: 1rem;
