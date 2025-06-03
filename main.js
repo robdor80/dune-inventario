@@ -10,7 +10,6 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import {
   getFirestore,
-  collection,
   doc,
   setDoc,
   getDoc
@@ -80,87 +79,93 @@ if (saveBtn) {
 
 // ======================= RENDER DASHBOARD =======================
 function renderAllData() {
-  // Aquí iría tu lógica para mostrar los datos en el Dashboard
+  // Implementa aquí el render del dashboard si lo necesitas
 }
 
-// ======================= FUNCIONES POR PÁGINA =======================
+// ======================= MODALES =======================
+function openResourceModal(type) {
+  const modal = document.getElementById("resourceModal");
+  if (!modal) return;
+  modal.dataset.type = type;
+  document.getElementById("resourceForm").reset();
+  modal.style.display = "block";
+}
+
+function closeAllModals() {
+  document.querySelectorAll(".modal").forEach(modal => {
+    modal.style.display = "none";
+  });
+}
+
+function handleResourceSubmit(e) {
+  e.preventDefault();
+  const modal = document.getElementById("resourceModal");
+  const type = modal.dataset.type;
+
+  const nombre = document.getElementById("resourceName").value;
+  const categoria = document.getElementById("resourceCategory").value;
+  const nivel = document.getElementById("resourceLevel").value;
+  const cantidad = document.getElementById("resourceQuantity").value;
+  const imagen = document.getElementById("resourceImage").value;
+  const notas = document.getElementById("resourceNotes").value;
+
+  const nuevo = { nombre, categoria, nivel, cantidad, imagen, notas };
+
+  const key = {
+    raw: "duneRawResources",
+    refined: "duneRefinedResources",
+    objects: "duneObjects",
+    vehicles: "duneVehicles",
+    weapons: "duneWeapons"
+  }[type];
+
+  if (!key) return;
+
+  const actuales = JSON.parse(localStorage.getItem(key)) || [];
+  actuales.push(nuevo);
+  localStorage.setItem(key, JSON.stringify(actuales));
+
+  closeAllModals();
+  location.reload(); // o reemplázalo por render dinámico si quieres
+}
+
+// ======================= DETECCIÓN DE PÁGINA =======================
 document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
 
-  // RAW PAGE
   if (path.includes("raw.html")) {
-    handleGenericSection("raw", "duneRawResources", "addRawBtn", "rawContainer");
+    document.getElementById("addRawBtn")?.addEventListener("click", () => openResourceModal("raw"));
+    document.getElementById("resourceForm")?.addEventListener("submit", handleResourceSubmit);
+    document.querySelectorAll(".close-btn, .cancel-btn").forEach(btn => {
+      btn.addEventListener("click", closeAllModals);
+    });
+    renderItems("duneRawResources", "rawContainer");
   }
 
-  // REFINED PAGE
-  if (path.includes("refined.html")) {
-    handleGenericSection("refined", "duneRefinedResources", "addRefinedBtn", "refinedContainer");
-  }
-
-  // OBJECTS PAGE
-  if (path.includes("objects.html")) {
-    handleGenericSection("objects", "duneObjects", "addObjectBtn", "objectsContainer");
-  }
-
-  // VEHICLES PAGE
-  if (path.includes("vehicles.html")) {
-    handleGenericSection("vehicles", "duneVehicles", "addVehicleBtn", "vehiclesContainer");
-  }
-
-  // WEAPONS PAGE
-  if (path.includes("weapons.html")) {
-    handleGenericSection("weapons", "duneWeapons", "addWeaponBtn", "weaponsContainer");
-  }
-
-  function handleGenericSection(type, storageKey, addBtnId, containerId) {
-    const addBtn = document.getElementById(addBtnId);
-    const container = document.getElementById(containerId);
-
-    function getLocalData() {
-      return JSON.parse(localStorage.getItem(storageKey)) || [];
-    }
-
-    function saveLocalData(data) {
-      localStorage.setItem(storageKey, JSON.stringify(data));
-    }
-
-    function renderItems() {
-      const data = getLocalData();
-      container.innerHTML = "";
-      data.forEach((item) => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        card.innerHTML = `
-          <div class="item-header">
-            <div class="item-info">
-              <h3>${item.nombre}</h3>
-              <span class="item-category">${item.categoria}</span>
-              <span class="item-level">Tier ${item.nivel}</span>
-            </div>
-          </div>
-          <div class="item-notes">${item.notas || ""}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    if (addBtn) {
-      addBtn.addEventListener("click", () => {
-        const nombre = prompt("Nombre del recurso:");
-        if (!nombre) return;
-
-        const categoria = prompt("Categoría:");
-        const nivel = prompt("Nivel (0-2):");
-        const notas = prompt("Notas:");
-
-        const nuevoItem = { nombre, categoria, nivel, notas };
-        const datosActuales = getLocalData();
-        datosActuales.push(nuevoItem);
-        saveLocalData(datosActuales);
-        renderItems();
-      });
-    }
-
-    renderItems();
-  }
+  // Otras pestañas (refined, objects, etc.) puedes repetir este mismo patrón si lo deseas
 });
+
+function renderItems(storageKey, containerId) {
+  const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+
+  data.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "item-card";
+    card.innerHTML = `
+      <div class="item-header">
+        <div class="item-info">
+          <h3>${item.nombre}</h3>
+          <span class="item-category">${item.categoria}</span>
+          <span class="item-level">Tier ${item.nivel}</span>
+          <span class="item-quantity">${item.cantidad} u.</span>
+        </div>
+        ${item.imagen ? `<img src="${item.imagen}" alt="${item.nombre}" class="item-image">` : ""}
+      </div>
+      <div class="item-notes">${item.notas || ""}</div>
+    `;
+    container.appendChild(card);
+  });
+}
