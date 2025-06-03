@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Configuración de Firebase
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
   authDomain: "dune-inventario.firebaseapp.com",
@@ -18,28 +18,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// Login
 window.loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
-    document.getElementById("user-info").innerText = `Hola, ${user.displayName}`;
+    document.getElementById("user-info").textContent = `Hola, ${user.displayName}`;
     document.getElementById("login-btn").style.display = "none";
     document.getElementById("logout-btn").style.display = "inline-block";
     loadUserData(user.uid);
   } catch (error) {
-    console.error("Error al iniciar sesión:", error);
+    console.error("Login error:", error);
     alert("No se pudo iniciar sesión.");
   }
 };
 
-// Logout
 window.logout = async () => {
   await signOut(auth);
   location.reload();
 };
 
-// Guardar datos del DOM
 window.saveData = async () => {
   const user = auth.currentUser;
   if (!user) return alert("Debes iniciar sesión.");
@@ -51,10 +48,9 @@ window.saveData = async () => {
     skills: document.getElementById("lista-skills")?.innerHTML || ""
   };
   await setDoc(doc(db, "users", user.uid), data);
-  alert("Datos guardados.");
+  alert("Datos guardados en la nube.");
 };
 
-// Cargar datos al DOM
 async function loadUserData(uid) {
   const snap = await getDoc(doc(db, "users", uid));
   if (snap.exists()) {
@@ -70,22 +66,20 @@ async function loadUserData(uid) {
   }
 }
 
-// Estado del usuario
 onAuthStateChanged(auth, user => {
   if (user) {
-    document.getElementById("user-info").innerText = `Hola, ${user.displayName}`;
+    document.getElementById("user-info").textContent = `Hola, ${user.displayName}`;
     document.getElementById("login-btn").style.display = "none";
     document.getElementById("logout-btn").style.display = "inline-block";
     loadUserData(user.uid);
   }
 });
 
-// Navegación por pestañas
-window.openTab = function (evt, tabId) {
-  const tabs = document.querySelectorAll(".tab-content");
-  const buttons = document.querySelectorAll(".tab-button");
-  tabs.forEach(tab => tab.style.display = "none");
-  buttons.forEach(btn => btn.classList.remove("active"));
-  document.getElementById(tabId).style.display = "block";
+window.openTab = function (evt, tabName) {
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const tabContents = document.querySelectorAll(".tab-content");
+  tabButtons.forEach(btn => btn.classList.remove("active"));
+  tabContents.forEach(tab => tab.style.display = "none");
+  document.getElementById(tabName).style.display = "block";
   evt.currentTarget.classList.add("active");
 };
