@@ -2754,7 +2754,7 @@
         // Gestión de recetas
         function addMaterialToRecipe(materialName = '', quantity = 1) {
             const recipeContainer = document.getElementById('recipeContainer');
-            const allMaterials = [...rawResources, ...refinedResources];
+            const allMaterials = [...rawResources, ...refinedResources, objects];
             
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
