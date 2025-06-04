@@ -2058,7 +2058,8 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
         return;
     }
 
-    container.innerHTML = allCraftable.slice(0, 6).map(item => {
+    container.innerHTML = allCraftable.map(item => {
+
         const maxCraftable = getMaxCraftable(item);
 
         // Detección robusta del tipo de item
