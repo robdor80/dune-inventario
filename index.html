@@ -1428,7 +1428,7 @@
                 <select id="vehicleCategoryFilter" class="filter-select">
                     <option value="">Todas las categorías</option>
                     <option value="Ornitópteros">Ornitópteros</option>
-                    <option value="Vehículos Terrestres">Vehículos Terrestres</option>
+                    <option value="Moto de arena">Moto de arena</option>
                     <option value="Naves">Naves</option>
                     <option value="Módulos">Módulos</option>
                     <option value="Otros">Otros</option>
@@ -1456,11 +1456,13 @@
             <div class="filters">
                 <select id="weaponCategoryFilter" class="filter-select">
                     <option value="">Todas las categorías</option>
-                    <option value="Cuchillos">Cuchillos</option>
+                    <option value="Hoja corta">Hoja corta</option>
+                    <option value="Hoja larga">Hoja larga</option>
                     <option value="Rifles">Rifles</option>
                     <option value="Pistolas">Pistolas</option>
                     <option value="Explosivos">Explosivos</option>
                     <option value="Láseres">Láseres</option>
+                    <option value="Armas pesadas">Armas pesadas</option>
                     <option value="Otros">Otros</option>
                 </select>
                 <select id="weaponStatusFilter" class="filter-select">
@@ -1743,17 +1745,19 @@
             ],
             vehicles: [
                 'Ornitópteros',
-                'Vehículos Terrestres',
+                'Moto de arena',
                 'Naves',
                 'Módulos',
                 'Otros'
             ],
             weapons: [
-                'Cuchillos',
+                'Hoja corta',
+                'Hoja larga',
                 'Rifles',
                 'Pistolas',
                 'Explosivos',
                 'Láseres',
+                'Armas pesadas',
                 'Otros'
             ]
         };
@@ -1811,9 +1815,9 @@
             oldItems.forEach(item => {
                 if (!item.category) return;
                 
-                if (['Ornitópteros', 'Vehículos Terrestres', 'Naves', 'Módulos'].includes(item.category)) {
+                if (['Ornitópteros', 'Moto de arena', 'Naves', 'Módulos'].includes(item.category)) {
                     vehicles.push(item);
-                } else if (['Cuchillos', 'Rifles', 'Pistolas', 'Explosivos', 'Láseres'].includes(item.category)) {
+                } else if (['Hoja corta', 'Hoja larga', 'Rifles', 'Pistolas', 'Explosivos', 'Láseres', 'Armas pesadas'].includes(item.category)) {
                     weapons.push(item);
                 } else {
                     objects.push(item);
