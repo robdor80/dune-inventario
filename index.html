@@ -2043,6 +2043,10 @@
 
     const allItems = [...refinedResources, ...objects, ...vehicles, ...weapons];
 
+    console.log("Moto de arena (debug):", vehicles.find(v => v.name.toLowerCase().includes("moto")));
+console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase().includes("moto"))));
+
+
     const allCraftable = allItems.filter(item => {
         if (!item.recipe || !Array.isArray(item.recipe) || item.recipe.length === 0) return false;
         const status = getCraftingStatus(item);
