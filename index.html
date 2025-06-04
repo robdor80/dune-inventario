@@ -2754,7 +2754,8 @@
         // Gestión de recetas
         function addMaterialToRecipe(materialName = '', quantity = 1) {
             const recipeContainer = document.getElementById('recipeContainer');
-            const allMaterials = [...rawResources, ...refinedResources, objects];
+            const allMaterials = [...rawResources, ...refinedResources, ...objects];
+
             
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
@@ -2805,14 +2806,18 @@
         }
 
         function findMaterialQuantity(materialName) {
-            const rawMaterial = rawResources.find(r => r.name === materialName);
-            if (rawMaterial) return rawMaterial.quantity;
-            
-            const refinedMaterial = refinedResources.find(r => r.name === materialName);
-            if (refinedMaterial) return refinedMaterial.quantity;
-            
-            return 0;
-        }
+    const rawMaterial = rawResources.find(r => r.name === materialName);
+    if (rawMaterial) return rawMaterial.quantity;
+    
+    const refinedMaterial = refinedResources.find(r => r.name === materialName);
+    if (refinedMaterial) return refinedMaterial.quantity;
+
+    const objectMaterial = objects.find(r => r.name === materialName);
+    if (objectMaterial) return objectMaterial.quantity;
+    
+    return 0;
+}
+
 
         // Calculadora
         function populateCalculatorDropdown() {
