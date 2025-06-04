@@ -1188,7 +1188,16 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ff8f00;
         }
-    </style>
+    
+.can-craft-info {
+  font-size: 0.85rem;
+  color: #00ffcc;
+  margin-right: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+</style>
+
 </head>
 <body>
     <!-- Header -->
@@ -1685,7 +1694,6 @@
             renderAllTabs();
             populateCalculatorDropdown();
             renderObjectives();
-            renderDashboard();
         }
 
         // Gestión de almacenamiento
@@ -2287,30 +2295,27 @@
         }
 
         function filterCrafting(items, type) {
-    const categoryEl = document.getElementById(`${type}CategoryFilter`);
-    const statusEl = document.getElementById(`${type}StatusFilter`);
-    const categoryFilter = categoryEl ? categoryEl.value : "";
-    const statusFilter = statusEl ? statusEl.value : "";
-    const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
-
-    return items.filter(item => {
-        const matchesCategory = !categoryFilter || item.category === categoryFilter;
-        const matchesSearch = !searchTerm || 
-            item.name.toLowerCase().includes(searchTerm) ||
-            item.category.toLowerCase().includes(searchTerm) ||
-            (item.notes && item.notes.toLowerCase().includes(searchTerm));
-
-        let matchesStatus = true;
-        if (statusFilter) {
-            const status = getCraftingStatus(item);
-            matchesStatus = (statusFilter === 'can-craft' && status.canCraft) ||
-                            (statusFilter === 'missing-materials' && !status.canCraft);
+            const categoryFilter = document.getElementById(`${type}CategoryFilter`).value;
+            const statusFilter = document.getElementById(`${type}StatusFilter`).value;
+            const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+            
+            return items.filter(item => {
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                const matchesSearch = !searchTerm || 
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.category.toLowerCase().includes(searchTerm) ||
+                    (item.notes && item.notes.toLowerCase().includes(searchTerm));
+                
+                let matchesStatus = true;
+                if (statusFilter) {
+                    const status = getCraftingStatus(item);
+                    matchesStatus = (statusFilter === 'can-craft' && status.canCraft) ||
+                                  (statusFilter === 'missing-materials' && !status.canCraft);
+                }
+                
+                return matchesCategory && matchesSearch && matchesStatus;
+            });
         }
-
-        return matchesCategory && matchesSearch && matchesStatus;
-    });
-}
-
 
         // Búsqueda
         function handleGlobalSearch() {
@@ -2531,51 +2536,47 @@
 
         // Formularios
         function handleResourceSubmit(e) {
-    e.preventDefault();
-
-    const type = editingType;
-    const resources = type === 'raw' ? rawResources : refinedResources;
-
-    const formData = {
-        name: document.getElementById('resourceName').value.trim(),
-        category: document.getElementById('resourceCategory').value,
-        level: parseInt(document.getElementById('resourceLevel').value),
-        quantity: parseInt(document.getElementById('resourceQuantity').value),
-        image: document.getElementById('resourceImage').value.trim(),
-        notes: document.getElementById('resourceNotes').value.trim()
-    };
-
-    if (
-        !type || !["raw", "refined"].includes(type) ||
-        !formData.name || formData.name === "undefined" ||
-        !formData.category || formData.category === "undefined" ||
-        isNaN(formData.level) ||
-        isNaN(formData.quantity)
-    ) {
-        alert("Por favor, completa correctamente todos los campos obligatorios.");
-        return;
-    }
-
-    if (!editingItem && resources.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
-        alert('Ya existe un recurso con ese nombre.');
-        return;
-    }
-
-    if (editingItem) {
-        Object.assign(editingItem, formData);
-    } else {
-        formData.id = generateId();
-        resources.push(formData);
-    }
-
-    saveToStorage();
-    renderTab(editingType);
-    renderTab('objects');
-    renderTab('vehicles');
-    renderTab('weapons');
-    closeAllModals();
-}
-
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('resourceName').value.trim(),
+                category: document.getElementById('resourceCategory').value,
+                level: parseInt(document.getElementById('resourceLevel').value),
+                quantity: parseInt(document.getElementById('resourceQuantity').value),
+                image: document.getElementById('resourceImage').value.trim(),
+                notes: document.getElementById('resourceNotes').value.trim()
+            };
+            
+            // Validación
+            if (!formData.name || !formData.category) {
+                alert('Por favor, completa todos los campos obligatorios.');
+                return;
+            }
+            
+            const resources = editingType === 'raw' ? rawResources : refinedResources;
+            
+            // Verificar duplicados
+            if (!editingItem && resources.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
+                alert('Ya existe un recurso con ese nombre.');
+                return;
+            }
+            
+            if (editingItem) {
+                // Editar
+                Object.assign(editingItem, formData);
+            } else {
+                // Crear nuevo
+                formData.id = generateId();
+                resources.push(formData);
+            }
+            
+            saveToStorage();
+            renderTab(editingType);
+            renderTab('objects');
+            renderTab('vehicles');
+            renderTab('weapons');
+            closeAllModals();
+        }
 
         function handleCraftingSubmit(e) {
             e.preventDefault();
