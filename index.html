@@ -1229,21 +1229,30 @@
   </div>
 
   <!-- Sección derecha: botones de utilidad -->
-  <div class="header-buttons" style="margin-top: 1rem;">
-    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-      <button id="loginBtn" class="utility-btn">🔐 Iniciar sesión</button>
-      <button id="logoutBtn" class="utility-btn" style="display: none;">🔓 Cerrar sesión</button>
-      <button id="exportBtn" class="utility-btn">📊 Exportar</button>
-      <button id="importBtn" class="utility-btn">📥 Importar</button>
-      <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
-      <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
-      <input type="file" id="importFile" accept=".json" style="display: none;">
-      <!-- Nombre de usuario a la derecha -->
-<div id="userNameContainer" style="margin-left: auto; color: #fff; font-size: 0.9rem;">
-  <span id="userName"></span>
-</div>
-    </div>
+  <div class="header-buttons" style="margin-top: 1rem; display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  
+  <!-- Botones de utilidad -->
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button id="exportBtn" class="utility-btn">📊 Exportar</button>
+    <button id="importBtn" class="utility-btn">📥 Importar</button>
+    <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
+    <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
+    <input type="file" id="importFile" accept=".json" style="display: none;">
   </div>
+
+  <!-- Botones de sesión -->
+  <div style="display: flex; gap: 0.5rem; align-items: center;">
+    <button id="loginBtn" class="utility-btn">🔐 Iniciar sesión</button>
+    <button id="logoutBtn" class="utility-btn" style="display: none;">🔓 Cerrar sesión</button>
+  </div>
+
+  <!-- Nombre de usuario a la derecha -->
+  <div id="userNameContainer" style="margin-left: auto; color: #fff; font-size: 0.9rem;">
+    <span id="userName"></span>
+  </div>
+
+</div>
+
 </header>
 
 
