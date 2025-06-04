@@ -2041,10 +2041,11 @@
         function renderCraftableItems() {
             const container = document.getElementById('craftableItemsContent');
             const allCraftable = [...refinedResources, ...objects, ...vehicles, ...weapons].filter(item => {
-                if (!item.recipe || item.recipe.length === 0) return false;
-                const status = getCraftingStatus(item);
-                return status.canCraft;
-            });
+    if (!item.recipe || item.recipe.length === 0) return false;
+    const status = getCraftingStatus(item);
+    return status.canCraft;
+});
+
 
             if (allCraftable.length === 0) {
                 container.innerHTML = '<div class="empty-dashboard"><h4>Sin materiales</h4><p>Necesitas más recursos para crear</p></div>';
