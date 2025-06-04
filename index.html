@@ -1230,6 +1230,8 @@
         <button class="tab-btn" data-tab="objects">🔧 Objetos</button>
         <button class="tab-btn" data-tab="vehicles">🚗 Vehículos</button>
         <button class="tab-btn" data-tab="weapons">⚔️ Armas</button>
+        <button class="tab-btn" data-tab="webs">🌐 Webs</button>
+
     </nav>
 
     <!-- Contenido Principal -->
@@ -1336,6 +1338,7 @@
                 <select id="rawCategoryFilter" class="filter-select">
                     <option value="">Todas las categorías</option>
                     <option value="Minerales">Minerales</option>
+                    <option value="Metales">Metales</option>
                     <option value="Orgánicos">Orgánicos</option>
                     <option value="Combustibles">Combustibles</option>
                     <option value="Otros">Otros</option>
@@ -1469,6 +1472,34 @@
                 <!-- Items se cargan dinámicamente -->
             </div>
         </section>
+
+       <!-- Pestaña Webs -->
+<section id="webs-tab" class="tab-content">
+    <div class="tab-header">
+        <h2>🌐 Webs</h2>
+        
+    </div>
+
+    <div class="items-container">
+        <div class="item-card">
+            <div class="item-header">
+                <img src="https://gtcdn.info/gt/gt.svg" class="item-image" alt="Dune Awakening">
+                <div class="item-info">
+                    <h3>Dune Awakening</h3>
+                    <div class="item-category">Database</div>
+                </div>
+            </div>
+            <div class="item-notes">Accede a información sobre recursos de Dune Awakening.</div>
+            <div class="item-actions">
+                <a href="https://dune.gaming.tools/" target="_blank" rel="noopener noreferrer" class="utility-btn">🌐 Visitar</a>
+            </div>
+        </div>
+
+        
+    </div>
+</section>
+
+
     </main>
 
     <!-- Footer -->
@@ -1495,6 +1526,7 @@
                     <select id="resourceCategory" required>
                         <option value="">Seleccionar categoría</option>
                         <option value="Minerales">Minerales</option>
+                        <option value="Metales">Metales</option>
                         <option value="Orgánicos">Orgánicos</option>
                         <option value="Combustibles">Combustibles</option>
                         <option value="Lingotes">Lingotes</option>
@@ -2138,6 +2170,10 @@
                 case 'dashboard':
                     renderDashboard();
                     break;
+                case 'webs':
+    // Puedes poner renderWebs() si haces lógica luego
+    break;
+
             }
         }
 
