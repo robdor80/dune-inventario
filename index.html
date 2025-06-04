@@ -2179,83 +2179,87 @@
         }
 
         function renderCrafting(items, containerId, type) {
-            const container = document.getElementById(containerId);
-            const filteredItems = filterCrafting(items, type);
-            
-            if (filteredItems.length === 0) {
-                const typeName = type === 'objects' ? 'objetos' : type === 'vehicles' ? 'vehículos' : 'armas';
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No hay ${typeName}</h3>
-                        <p>Añade tu primer ${typeName.slice(0, -1)} usando el botón correspondiente</p>
-                    </div>
-                `;
-                return;
-            }
+    const container = document.getElementById(containerId);
+    const filteredItems = filterCrafting(items, type);
+    
+    if (filteredItems.length === 0) {
+        const typeName = type === 'objects' ? 'objetos' : type === 'vehicles' ? 'vehículos' : 'armas';
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>No hay ${typeName}</h3>
+                <p>Añade tu primer ${typeName.slice(0, -1)} usando el botón correspondiente</p>
+            </div>
+        `;
+        return;
+    }
 
-            container.innerHTML = filteredItems.map(item => {
-                const craftingStatus = getCraftingStatus(item);
-                const maxCraftable = getMaxCraftable(item);
-                
-                return `
-                    <div class="item-card crafting-card" data-id="${item.id}">
-                        <div class="crafting-status ${craftingStatus.canCraft ? 'can-craft' : 'missing-materials'}">
-                            ${craftingStatus.canCraft ? `Puedo hacer ${maxCraftable}` : 'Faltan materiales'}
-                        </div>
-                        
-                        <div class="item-header">
-                            <img src="${item.image || getDefaultImage(type)}" 
-                                 alt="${item.name}" class="item-image"
-                                 onerror="this.src='${getDefaultImage(type)}'">
-                            <div class="item-info">
-                                <h3>${item.name}</h3>
-                                <div class="item-category">${item.category}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="item-quantity">
-                            <span class="quantity-label">Tengo:</span>
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', -1)">-</button>
-                                <span class="quantity-display">${item.quantity || 0}</span>
-                                <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', 1)">+</button>
-                            </div>
-                        </div>
-                        
-                        <div class="recipe-info">
-                            <div class="recipe-title">Materiales necesarios:</div>
-                            <div class="recipe-materials">
-                                ${item.recipe.map(material => {
-                                    const available = findMaterialQuantity(material.name);
-                                    const sufficient = available >= material.quantity;
-                                    return `
-                                        <div class="material-item">
-                                            <span class="material-name">${material.name} x${material.quantity}</span>
-                                            <span class="${sufficient ? 'material-available' : 'material-missing'}">
-                                                (${available}/${material.quantity})
-                                            </span>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                        
-                        <div class="craft-info">
-                            <div>🔧 ${item.tool || 'Manual'}</div>
-                            <div>⏱️ ${item.time}s</div>
-                            <div>📦 Produce ${item.yield}</div>
-                        </div>
-                        
-                        ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
-                        
-                        <div class="item-actions">
-                            <button class="edit-btn" onclick="editCrafting('${item.id}', '${type}')" title="Editar">✏️</button>
-                            <button class="delete-btn" onclick="deleteCrafting('${item.id}', '${type}')" title="Eliminar">🗑️</button>
-                        </div>
+    container.innerHTML = filteredItems.map(item => {
+        const craftingStatus = getCraftingStatus(item);
+        const maxCraftable = getMaxCraftable(item);
+
+        const statusHTML = `
+            <span class="crafting-status ${craftingStatus.canCraft ? 'can-craft' : 'missing-materials'}">
+                ${craftingStatus.canCraft ? `Puedo hacer ${maxCraftable}` : 'Faltan materiales'}
+            </span>
+        `;
+        
+        return `
+            <div class="item-card crafting-card" data-id="${item.id}">
+                <div class="item-header">
+                    <img src="${item.image || getDefaultImage(type)}" 
+                         alt="${item.name}" class="item-image"
+                         onerror="this.src='${getDefaultImage(type)}'">
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        <div class="item-category">${item.category}</div>
                     </div>
-                `;
-            }).join('');
-        }
+                </div>
+                
+                <div class="item-quantity">
+                    <span class="quantity-label">Tengo:</span>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', -1)">-</button>
+                        <span class="quantity-display">${item.quantity || 0}</span>
+                        <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', 1)">+</button>
+                    </div>
+                </div>
+                
+                <div class="recipe-info">
+                    <div class="recipe-title">Materiales necesarios:</div>
+                    <div class="recipe-materials">
+                        ${item.recipe.map(material => {
+                            const available = findMaterialQuantity(material.name);
+                            const sufficient = available >= material.quantity;
+                            return `
+                                <div class="material-item">
+                                    <span class="material-name">${material.name} x${material.quantity}</span>
+                                    <span class="${sufficient ? 'material-available' : 'material-missing'}">
+                                        (${available}/${material.quantity})
+                                    </span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <div class="craft-info">
+                    <div>🔧 ${item.tool || 'Manual'}</div>
+                    <div>⏱️ ${item.time}s</div>
+                    <div>📦 Produce ${item.yield}</div>
+                </div>
+                
+                ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
+
+                <div class="item-actions">
+                    ${statusHTML}
+                    <button class="edit-btn" onclick="editCrafting('${item.id}', '${type}')" title="Editar">✏️</button>
+                    <button class="delete-btn" onclick="deleteCrafting('${item.id}', '${type}')" title="Eliminar">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 
         // Imágenes por defecto
         function getDefaultImage(type) {
