@@ -30,6 +30,11 @@
 
         /* Header */
         .header {
+            display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+            
             background: linear-gradient(135deg, rgba(20, 30, 48, 0.95) 0%, rgba(45, 66, 99, 0.9) 100%);
             backdrop-filter: blur(20px);
             border-bottom: 3px solid #ffa726;
@@ -1196,31 +1201,48 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #ff8f00;
         }
+
+        .auth-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-left: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
     </style>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
-        <div class="header-content">
-            <h1>🏜️ DUNE AWAKENING</h1>
-            <p>Rastreador de Inventario</p>
-        </div>
-        
-        <!-- Búsqueda Global -->
-        <div class="search-container">
-            <input type="text" id="globalSearch" placeholder="Buscar items..." class="search-input">
-            <button id="clearSearch" class="clear-btn">✕</button>
-        </div>
+  <!-- Sección izquierda: título + subtítulo + buscador -->
+  <div style="width: 100%; max-width: 100%;">
+    <h1>🏜️ DUNE AWAKENING</h1>
+    <p>Rastreador de Inventario</p>
 
-        <!-- Botones de Utilidad -->
-        <div class="utility-buttons">
-            <button id="exportBtn" class="utility-btn">📊 Exportar</button>
-            <button id="importBtn" class="utility-btn">📥 Importar</button>
-            <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
-            <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;">
-        </div>
-    </header>
+    <!-- Búsqueda debajo -->
+    <div class="search-container" style="margin-top: 0.75rem; display: flex; gap: 0.25rem; align-items: center; max-width: 400px;">
+      <input type="text" id="globalSearch" placeholder="Buscar items..." class="search-input" style="flex: 1;">
+      <button id="clearSearch" class="clear-btn">✕</button>
+    </div>
+  </div>
+
+  <!-- Sección derecha: botones de utilidad -->
+  <div class="header-buttons" style="margin-top: 1rem;">
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <button id="loginBtn" class="utility-btn">🔐 Iniciar sesión</button>
+      <button id="logoutBtn" class="utility-btn" style="display: none;">🔓 Cerrar sesión</button>
+      <button id="exportBtn" class="utility-btn">📊 Exportar</button>
+      <button id="importBtn" class="utility-btn">📥 Importar</button>
+      <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
+      <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
+      <input type="file" id="importFile" accept=".json" style="display: none;">
+      <span id="userName" style="color: #fff; font-size: 0.9rem;"></span>
+    </div>
+  </div>
+</header>
+
 
     <!-- Navegación de Pestañas -->
     <nav class="nav-tabs">
@@ -3096,5 +3118,55 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
         window.completeObjective = completeObjective;
         window.deleteObjective = deleteObjective;
     </script>
+
+    <!-- Firebase core -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+<script>
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
+    authDomain: "dune-inventario.firebaseapp.com",
+    projectId: "dune-inventario",
+    storageBucket: "dune-inventario.firebasestorage.app",
+    messagingSenderId: "26414027507",
+    appId: "1:26414027507:web:b8970fb32a837d7117dd86"
+  };
+
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Referencias a botones
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const userNameSpan = document.getElementById("userName");
+
+  // Iniciar sesión con Google
+  loginBtn.addEventListener("click", () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(console.error);
+  });
+
+  // Cerrar sesión
+  logoutBtn.addEventListener("click", () => {
+    auth.signOut().catch(console.error);
+  });
+
+  // Detectar cambios en sesión
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      userNameSpan.textContent = `👤 ${user.displayName}`;
+    } else {
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      userNameSpan.textContent = "";
+    }
+  });
+</script>
+
 </body>
 </html>
