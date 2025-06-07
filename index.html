@@ -1385,8 +1385,8 @@
 
     <div class="water-solaris-form">
         <div class="form-group">
-            <label for="aguaLinterjones">Linterjones (cantimploras) que tienes:</label>
-            <input type="number" id="aguaLinterjones" disabled>
+            <label for="aguaLinterjones">Linterjones (cantimploras):</label>
+            <input type="number" id="aguaLinterjones" min="0" value="0">
         </div>
 
         <div class="form-group">
@@ -1399,6 +1399,7 @@
         </div>
     </div>
 </section>
+
 
 
 
@@ -2079,9 +2080,14 @@
         // Agua
 function guardarAgua() {
     const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
+    const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+
     localStorage.setItem('aguaLitros', litros);
+    localStorage.setItem('aguaLinterjones', linterjones);
+
     alert("Datos de agua guardados.");
 }
+
 
 
 // Solaris
@@ -3208,13 +3214,14 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
         }
 
         function renderAguaTab() {
-    // Mostrar cuántos linterjones tienes
-    const linterjon = objects.find(obj => obj.name.toLowerCase().includes("linterjón"));
-    document.getElementById('aguaLinterjones').value = linterjon ? linterjon.quantity || 0 : 0;
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
+}
+
 
     // Cargar litros en cisternas desde localStorage
     document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
-}
+
 
 
         // Funciones globales para onclick
