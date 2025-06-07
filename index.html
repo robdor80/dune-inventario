@@ -1385,13 +1385,8 @@
 
     <div class="water-solaris-form">
         <div class="form-group">
-            <label for="aguaLinterjones">Linterjones (cantimploras):</label>
-            <input type="number" id="aguaLinterjones" min="0" value="0">
-        </div>
-
-        <div class="form-group">
-            <label for="aguaPosibles">Posibles a fabricar (según objetos):</label>
-            <input type="number" id="aguaPosibles" min="0" value="0" disabled>
+            <label for="aguaLinterjones">Linterjones (cantimploras) que tienes:</label>
+            <input type="number" id="aguaLinterjones" disabled>
         </div>
 
         <div class="form-group">
@@ -1404,6 +1399,7 @@
         </div>
     </div>
 </section>
+
 
 
 <!-- Pestaña Solaris dinero -->
@@ -1866,6 +1862,8 @@
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
+            renderAguaTab();
+
         });
 
         function initializeApp() {
@@ -2080,12 +2078,11 @@
 
         // Agua
 function guardarAgua() {
-    const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
     const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
-    localStorage.setItem('aguaLinterjones', linterjones);
     localStorage.setItem('aguaLitros', litros);
     alert("Datos de agua guardados.");
 }
+
 
 // Solaris
 function guardarSolaris() {
@@ -3209,6 +3206,16 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
+
+        function renderAguaTab() {
+    // Mostrar cuántos linterjones tienes
+    const linterjon = objects.find(obj => obj.name.toLowerCase().includes("linterjón"));
+    document.getElementById('aguaLinterjones').value = linterjon ? linterjon.quantity || 0 : 0;
+
+    // Cargar litros en cisternas desde localStorage
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+}
+
 
         // Funciones globales para onclick
         window.changeQuantity = changeQuantity;
