@@ -1211,6 +1211,19 @@
     white-space: nowrap;
 }
 
+.water-solaris-form {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: rgba(45, 66, 99, 0.3);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #4a5568;
+}
+.water-solaris-form .form-group {
+    margin-bottom: 1.2rem;
+}
+
+
     </style>
 </head>
 <body>
@@ -1258,17 +1271,19 @@
 
     <!-- Navegación de Pestañas -->
     <nav class="nav-tabs">
-        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-        <button class="tab-btn" data-tab="raw">🗿 Recursos en bruto</button>
-        <button class="tab-btn" data-tab="refined">⚗️ Recursos refinados</button>
-        <button class="tab-btn" data-tab="objects">🔧 Objetos</button>
-        <button class="tab-btn" data-tab="vehicles">🚗 Vehículos</button>
-        <button class="tab-btn" data-tab="weapons">⚔️ Armas</button>
-        <button class="tab-btn" data-tab="webs">🌐 Webs</button>
-        <button class="tab-btn" data-tab="mapa">🗺️ Mapa</button>
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="agua">💧 Agua</button>
+    <button class="tab-btn" data-tab="solaris">💰 Solaris</button>
+    <button class="tab-btn" data-tab="raw">🗿 Recursos en bruto</button>
+    <button class="tab-btn" data-tab="refined">⚗️ Recursos refinados</button>
+    <button class="tab-btn" data-tab="objects">🔧 Objetos</button>
+    <button class="tab-btn" data-tab="vehicles">🚗 Vehículos</button>
+    <button class="tab-btn" data-tab="weapons">⚔️ Armas</button>
+    <button class="tab-btn" data-tab="webs">🌐 Webs</button>
+    <button class="tab-btn" data-tab="mapa">🗺️ Mapa</button>
+    
+</nav>
 
-
-    </nav>
 
     <!-- Contenido Principal -->
     <main class="main-content">
@@ -1361,6 +1376,56 @@
                 </div>
             </div>
         </section>
+
+        <!-- Pestaña Agua -->
+<section id="agua-tab" class="tab-content">
+    <div class="tab-header">
+        <h2>💧 Gestión del Agua</h2>
+    </div>
+
+    <div class="water-solaris-form">
+        <div class="form-group">
+            <label for="aguaLinterjones">Linterjones (cantimploras):</label>
+            <input type="number" id="aguaLinterjones" min="0" value="0">
+        </div>
+
+        <div class="form-group">
+            <label for="aguaPosibles">Posibles a fabricar (según objetos):</label>
+            <input type="number" id="aguaPosibles" min="0" value="0" disabled>
+        </div>
+
+        <div class="form-group">
+            <label for="aguaLitros">Litros en cisternas de la base:</label>
+            <input type="number" id="aguaLitros" min="0" value="0">
+        </div>
+
+        <div class="form-buttons">
+            <button class="submit-btn" onclick="guardarAgua()">Guardar</button>
+        </div>
+    </div>
+</section>
+
+
+<!-- Pestaña Solaris dinero -->
+<section id="solaris-tab" class="tab-content">
+    <div class="tab-header">
+        <h2>💰 Solaris</h2>
+    </div>
+
+    <div class="water-solaris-form">
+        <div class="form-group">
+            <label for="solarisCantidad">Cantidad de Solaris:</label>
+            <input type="number" id="solarisCantidad" value="0">
+        </div>
+
+        <div class="form-buttons">
+            <button class="submit-btn" onclick="guardarSolaris()">Guardar</button>
+        </div>
+    </div>
+</section>
+
+
+
 
         <!-- Pestaña Recursos en bruto -->
         <section id="raw-tab" class="tab-content">
@@ -2012,6 +2077,30 @@
             // Renderizar contenido
             renderTab(tabName);
         }
+
+        // Agua
+function guardarAgua() {
+    const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+    const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
+    localStorage.setItem('aguaLinterjones', linterjones);
+    localStorage.setItem('aguaLitros', litros);
+    alert("Datos de agua guardados.");
+}
+
+// Solaris
+function guardarSolaris() {
+    const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
+    localStorage.setItem('solaris', cantidad);
+    alert("Cantidad de Solaris guardada.");
+}
+
+// Al cargar, restaurar valores
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+});
+
 
         // Renderizado
         function renderAllTabs() {
