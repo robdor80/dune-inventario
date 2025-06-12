@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+style<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +11,8 @@
     margin-right: auto;
     padding-left: 0.5rem;
     color: #00ffcc;
+
+
 }
 
         /* Reset y configuración base */
@@ -19,6 +21,25 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        .save-button {
+  background-color: #1e293b; /* Igual que los otros botones */
+  color: white;
+  border: 2px solid #d88c28; /* Borde especia */
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 8px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #334155; /* Hover igual que otros botones */
+}
+
+
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1273,6 +1294,8 @@
     <button id="importBtn" class="utility-btn">📥 Importar</button>
     <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
     <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
+    <button id="saveBtn" class="save-button">💾 Guardar</button>
+
     <input type="file" id="importFile" accept=".json" style="display: none;">
   </div>
 
@@ -3406,6 +3429,21 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
       userNameSpan.textContent = "";
     }
   });
+</script>
+
+<script>
+
+    const saveBtn = document.getElementById("saveBtn");
+
+saveBtn.addEventListener("click", () => {
+  const user = auth.currentUser;
+  if (user) {
+    guardarDatosEnFirestore(user.uid);
+  } else {
+    alert("Debes iniciar sesión para guardar tus datos.");
+  }
+});
+
 </script>
 
 
