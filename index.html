@@ -3279,115 +3279,33 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
         window.deleteObjective = deleteObjective;
     </script>
 
-    <!-- Firebase core -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+   
+
+
+ 
+
+<!-- Firebase v10.12 compatibilidad con sintaxis tradicional -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // Configuración de Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
+    apiKey: "AIzaSyASzDeDo6g_SwaGbrueR2444rWrkaFgTU",
     authDomain: "dune-inventario.firebaseapp.com",
     projectId: "dune-inventario",
-    storageBucket: "dune-inventario.firebasestorage.app",
-    messagingSenderId: "26414027507",
-    appId: "1:26414027507:web:b8970fb32a837d7117dd86"
+    storageBucket: "dune-inventario.appspot.com",
+    messagingSenderId: "264140275207",
+    appId: "1:264140275207:web:b897efb32a87d7117dd86"
   };
 
-  // Inicializar Firebase
+  // Inicializar Firebase en modo compatibilidad
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-
-  // Referencias a botones
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const userNameSpan = document.getElementById("userName");
-
-
-
   const db = firebase.firestore();
-
-async function guardarDatosEnFirestore(userId) {
-  const datos = {
-    rawResources,
-    refinedResources,
-    objects,
-    vehicles,
-    weapons,
-    objectives,
-    aguaLinterjones: parseInt(localStorage.getItem('aguaLinterjones')) || 0,
-    aguaLitros: parseInt(localStorage.getItem('aguaLitros')) || 0,
-    solaris: parseInt(localStorage.getItem('solaris')) || 0
-  };
-
-  try {
-    await db.collection("users").doc(userId).set(datos);
-    console.log("✅ Datos guardados en Firestore");
-  } catch (error) {
-    console.error("❌ Error al guardar en Firestore:", error);
-  }
-}
-
-async function cargarDatosDesdeFirestore(userId) {
-  try {
-    const doc = await db.collection("users").doc(userId).get();
-    if (doc.exists) {
-      const datos = doc.data();
-      rawResources = datos.rawResources || [];
-      refinedResources = datos.refinedResources || [];
-      objects = datos.objects || [];
-      vehicles = datos.vehicles || [];
-      weapons = datos.weapons || [];
-      objectives = datos.objectives || [];
-
-      localStorage.setItem('aguaLinterjones', datos.aguaLinterjones || 0);
-      localStorage.setItem('aguaLitros', datos.aguaLitros || 0);
-      localStorage.setItem('solaris', datos.solaris || 0);
-
-      saveToStorage(); // Actualiza la web con los datos cargados
-      console.log("✅ Datos cargados desde Firestore");
-    } else {
-      console.log("ℹ️ No hay datos aún en Firestore para este usuario.");
-    }
-  } catch (error) {
-    console.error("❌ Error al cargar desde Firestore:", error);
-  }
-}
-
-
-  // Iniciar sesión con Google
-  loginBtn.addEventListener("click", () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(console.error);
-  });
-
-  // Cerrar sesión
-  logoutBtn.addEventListener("click", () => {
-    auth.signOut().catch(console.error);
-  });
-
-  // Detectar cambios en sesión
-  auth.onAuthStateChanged(user => {
-  if (user) {
-    loginBtn.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    userNameSpan.textContent = `👤 ${user.displayName}`;
-
-    // Cargar datos del usuario desde Firestore
-    cargarDatosDesdeFirestore(user.uid);
-
-    // Guardar cada 30 segundos automáticamente
-    setInterval(() => guardarDatosEnFirestore(user.uid), 30000);
-  } else {
-    loginBtn.style.display = "inline-block";
-    logoutBtn.style.display = "none";
-    userNameSpan.textContent = "";
-  }
-});
-
 </script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
 
 
 </body>
