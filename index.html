@@ -3367,31 +3367,42 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
     }
   }
 
-  async function cargarDatosDesdeFirestore(userId) {
-    try {
-      const doc = await db.collection("users").doc(userId).get();
-      if (doc.exists) {
-        const datos = doc.data();
-        rawResources = datos.rawResources || [];
-        refinedResources = datos.refinedResources || [];
-        objects = datos.objects || [];
-        vehicles = datos.vehicles || [];
-        weapons = datos.weapons || [];
-        objectives = datos.objectives || [];
+ async function cargarDatosDesdeFirestore(userId) {
+  try {
+    const doc = await db.collection("users").doc(userId).get();
+    if (doc.exists) {
+      const datos = doc.data();
+      rawResources = datos.rawResources || [];
+      refinedResources = datos.refinedResources || [];
+      objects = datos.objects || [];
+      vehicles = datos.vehicles || [];
+      weapons = datos.weapons || [];
+      objectives = datos.objectives || [];
 
-        localStorage.setItem('aguaLinterjones', datos.aguaLinterjones || 0);
-        localStorage.setItem('aguaLitros', datos.aguaLitros || 0);
-        localStorage.setItem('solaris', datos.solaris || 0);
+      localStorage.setItem('aguaLinterjones', datos.aguaLinterjones || 0);
+      localStorage.setItem('aguaLitros', datos.aguaLitros || 0);
+      localStorage.setItem('solaris', datos.solaris || 0);
 
-        saveToStorage(); // <- esta función ya la tienes más arriba
-        console.log("✅ Datos cargados desde Firestore");
-      } else {
-        console.log("ℹ️ No hay datos aún en Firestore para este usuario.");
-      }
-    } catch (error) {
-      console.error("❌ Error al cargar desde Firestore:", error);
+      saveToStorage(); // Guarda en localStorage
+
+      // 🔄 Refrescar visualmente el dashboard y pestañas
+      renderDashboard?.();
+      renderRawResources?.();
+      renderRefinedResources?.();
+      renderObjects?.();
+      renderVehicles?.();
+      renderWeapons?.();
+      renderObjectives?.();
+
+      console.log("✅ Datos cargados desde Firestore y vistas actualizadas");
+    } else {
+      console.log("ℹ️ No hay datos aún en Firestore para este usuario.");
     }
+  } catch (error) {
+    console.error("❌ Error al cargar desde Firestore:", error);
   }
+}
+
 </script>
 
 
