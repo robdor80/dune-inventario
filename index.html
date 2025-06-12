@@ -2957,35 +2957,48 @@ console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase()
 
         // Lógica de creación
         function getCraftingStatus(item) {
-            const materialsStatus = item.recipe.map(material => {
-                const available = findMaterialQuantity(material.name);
-                return {
-                    name: material.name,
-                    needed: material.quantity,
-                    available: available,
-                    sufficient: available >= material.quantity
-                };
-            });
-            
-            const canCraft = materialsStatus.every(m => m.sufficient);
-            
-            return {
-                canCraft,
-                materials: materialsStatus
-            };
-        }
+    if (!item?.recipe || !Array.isArray(item.recipe)) {
+        return {
+            canCraft: false,
+            materials: []
+        };
+    }
+
+    const materialsStatus = item.recipe.map(material => {
+        const available = findMaterialQuantity(material.name);
+        return {
+            name: material.name,
+            needed: material.quantity,
+            available: available,
+            sufficient: available >= material.quantity
+        };
+    });
+
+    const canCraft = materialsStatus.every(m => m.sufficient);
+
+    return {
+        canCraft,
+        materials: materialsStatus
+    };
+}
+
 
         function getMaxCraftable(item) {
-            let maxCraftable = Infinity;
-            
-            item.recipe.forEach(material => {
-                const available = findMaterialQuantity(material.name);
-                const possibleFromThis = Math.floor(available / material.quantity);
-                maxCraftable = Math.min(maxCraftable, possibleFromThis);
-            });
-            
-            return maxCraftable === Infinity ? 0 : maxCraftable * item.yield;
-        }
+    if (!item?.recipe || !Array.isArray(item.recipe)) {
+        return 0;
+    }
+
+    let maxCraftable = Infinity;
+
+    item.recipe.forEach(material => {
+        const available = findMaterialQuantity(material.name);
+        const possibleFromThis = Math.floor(available / material.quantity);
+        maxCraftable = Math.min(maxCraftable, possibleFromThis);
+    });
+
+    return maxCraftable === Infinity ? 0 : maxCraftable * (item.yield || 1);
+}
+
 
         function findMaterialQuantity(materialName) {
     const rawMaterial = rawResources.find(r => r.name === materialName);
