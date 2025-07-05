@@ -1380,6 +1380,18 @@
                     </div>
                 </div>
 
+                <!-- Energía -->
+                <div class="dashboard-card" id="energiaDashboardCard" style="display: none;">
+                    <div class="card-header">
+                        <h3>🔋 Energía</h3>
+                        <span class="card-subtitle">Cuenta regresiva</span>
+                    </div>
+                    <div class="card-content">
+                        <p id="energiaCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
+                    </div>
+                </div>
+
+
                 <!-- Recursos Escasos -->
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -1525,6 +1537,41 @@
                 </div>
             </div>
         </section>
+
+        <!-- Pestaña Energía -->
+        <section id="energia-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🔋 Energía</h2>
+                <button class="add-btn" id="addEnergiaBtn">+ Añadir nuevos datos</button>
+            </div>
+
+            <div class="water-solaris-form" id="energiaFormContainer" style="display:none;">
+                <div class="form-group">
+                    <label for="energiaDias">Días restantes:</label>
+                    <input type="number" id="energiaDias" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="energiaHoras">Horas restantes:</label>
+                    <input type="number" id="energiaHoras" min="0" value="0">
+                </div>
+
+                <div class="form-buttons">
+                    <button class="submit-btn" id="guardarEnergiaBtn">Guardar</button>
+                </div>
+            </div>
+
+            <div id="energiaCuentaRegresiva" class="dashboard-card" style="margin-top: 2rem; display:none;">
+                <div class="card-header">
+                    <h3>⏳ Energía</h3>
+                    <span class="card-subtitle">Cuenta regresiva</span>
+                </div>
+                <div class="card-content">
+                    <p id="energiaCountdownTexto" style="font-size: 1.2rem; color: #ffa726;"></p>
+                </div>
+            </div>
+        </section>
+
 
 
 
@@ -3498,6 +3545,8 @@
                 // Cargar datos del usuario desde Firestore
                 cargarDatosDesdeFirestore(user.uid);
                 recuperarDatosImpuestos();
+                recuperarDatosEnergia();
+
 
 
                 // Guardar cada 30 segundos automáticamente
@@ -3511,74 +3560,147 @@
 
         let impuestosIntervalo = null;
 
-document.getElementById('addImpuestoBtn').addEventListener('click', () => {
-  document.getElementById('impuestosFormContainer').style.display = 'block';
-});
+        document.getElementById('addImpuestoBtn').addEventListener('click', () => {
+            document.getElementById('impuestosFormContainer').style.display = 'block';
+        });
 
-document.getElementById('guardarImpuestosBtn').addEventListener('click', async () => {
-  const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
-  const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+        document.getElementById('guardarImpuestosBtn').addEventListener('click', async () => {
+            const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+            const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
 
-  const ahora = new Date();
-  const vencimiento = new Date(ahora.getTime() + (dias * 24 + horas) * 60 * 60 * 1000);
+            const ahora = new Date();
+            const vencimiento = new Date(ahora.getTime() + (dias * 24 + horas) * 60 * 60 * 1000);
 
-  const user = firebase.auth().currentUser;
-if (!user) {
-  alert("Debes iniciar sesión antes de guardar los datos.");
-  return;
-}
-const userId = user.uid;
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("Debes iniciar sesión antes de guardar los datos.");
+                return;
+            }
+            const userId = user.uid;
 
-  await firebase.firestore().collection("usuarios").doc(userId).set({
-    impuestosVencimiento: vencimiento.toISOString()
-  }, { merge: true });
+            await firebase.firestore().collection("usuarios").doc(userId).set({
+                impuestosVencimiento: vencimiento.toISOString()
+            }, { merge: true });
 
-  document.getElementById('impuestosFormContainer').style.display = 'none';
-  cargarCuentaRegresivaImpuestos(vencimiento);
-});
+            document.getElementById('impuestosFormContainer').style.display = 'none';
+            cargarCuentaRegresivaImpuestos(vencimiento);
+        });
 
-function cargarCuentaRegresivaImpuestos(fechaFin) {
-  clearInterval(impuestosIntervalo);
-  document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
-  document.getElementById('impuestosDashboardCard').style.display = 'block';
+        function cargarCuentaRegresivaImpuestos(fechaFin) {
+            clearInterval(impuestosIntervalo);
+            document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
+            document.getElementById('impuestosDashboardCard').style.display = 'block';
 
-  function actualizar() {
-    const ahora = new Date();
-    const fin = new Date(fechaFin);
-    const diferencia = fin - ahora;
+            function actualizar() {
+                const ahora = new Date();
+                const fin = new Date(fechaFin);
+                const diferencia = fin - ahora;
 
-    if (diferencia <= 0) {
-      document.getElementById('impuestosCountdownTexto').textContent = "⚠️ ¡Impuestos vencidos!";
-      document.getElementById('impuestosCountdownDashboard').textContent = "⚠️ ¡Impuestos vencidos!";
-      clearInterval(impuestosIntervalo);
-      return;
-    }
+                if (diferencia <= 0) {
+                    document.getElementById('impuestosCountdownTexto').textContent = "⚠️ ¡Impuestos vencidos!";
+                    document.getElementById('impuestosCountdownDashboard').textContent = "⚠️ ¡Impuestos vencidos!";
+                    clearInterval(impuestosIntervalo);
+                    return;
+                }
 
-    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-    const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-    const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
 
-    const texto = `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos para pagar los impuestos.`;
-    document.getElementById('impuestosCountdownTexto').textContent = texto;
-    document.getElementById('impuestosCountdownDashboard').textContent = texto;
-  }
+                const texto = `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos para pagar los impuestos.`;
+                document.getElementById('impuestosCountdownTexto').textContent = texto;
+                document.getElementById('impuestosCountdownDashboard').textContent = texto;
+            }
 
-  actualizar();
-  impuestosIntervalo = setInterval(actualizar, 1000);
-}
+            actualizar();
+            impuestosIntervalo = setInterval(actualizar, 1000);
+        }
 
-async function recuperarDatosImpuestos() {
-  const user = firebase.auth().currentUser;
-  if (!user) return;
+        async function recuperarDatosImpuestos() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
 
-  const doc = await firebase.firestore().collection("usuarios").doc(user.uid).get();
-  if (doc.exists && doc.data().impuestosVencimiento) {
-    cargarCuentaRegresivaImpuestos(doc.data().impuestosVencimiento);
-  }
-}
+            const doc = await firebase.firestore().collection("usuarios").doc(user.uid).get();
+            if (doc.exists && doc.data().impuestosVencimiento) {
+                cargarCuentaRegresivaImpuestos(doc.data().impuestosVencimiento);
+            }
+        }
 
     </script>
+
+    <script>
+        let energiaIntervalo = null;
+
+        document.getElementById('addEnergiaBtn').addEventListener('click', () => {
+            document.getElementById('energiaFormContainer').style.display = 'block';
+        });
+
+        document.getElementById('guardarEnergiaBtn').addEventListener('click', async () => {
+            const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+            const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+
+            const ahora = new Date();
+            const vencimiento = new Date(ahora.getTime() + (dias * 24 + horas) * 60 * 60 * 1000);
+
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("Debes iniciar sesión antes de guardar los datos.");
+                return;
+            }
+
+            const userId = user.uid;
+
+            await firebase.firestore().collection("usuarios").doc(userId).set({
+                energiaVencimiento: vencimiento.toISOString()
+            }, { merge: true });
+
+            document.getElementById('energiaFormContainer').style.display = 'none';
+            cargarCuentaRegresivaEnergia(vencimiento);
+        });
+
+        function cargarCuentaRegresivaEnergia(fechaFin) {
+            clearInterval(energiaIntervalo);
+            document.getElementById('energiaCuentaRegresiva').style.display = 'block';
+            document.getElementById('energiaDashboardCard').style.display = 'block';
+
+            function actualizar() {
+                const ahora = new Date();
+                const fin = new Date(fechaFin);
+                const diferencia = fin - ahora;
+
+                if (diferencia <= 0) {
+                    document.getElementById('energiaCountdownTexto').textContent = "⚠️ ¡Energía agotada!";
+                    document.getElementById('energiaCountdownDashboard').textContent = "⚠️ ¡Energía agotada!";
+                    clearInterval(energiaIntervalo);
+                    return;
+                }
+
+                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+                const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+                const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+
+                const texto = `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos de energía.`;
+                document.getElementById('energiaCountdownTexto').textContent = texto;
+                document.getElementById('energiaCountdownDashboard').textContent = texto;
+            }
+
+            actualizar();
+            energiaIntervalo = setInterval(actualizar, 1000);
+        }
+
+        async function recuperarDatosEnergia() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            const doc = await firebase.firestore().collection("usuarios").doc(user.uid).get();
+            if (doc.exists && doc.data().energiaVencimiento) {
+                cargarCuentaRegresivaEnergia(doc.data().energiaVencimiento);
+            }
+        }
+    </script>
+
 
     <script>
 
