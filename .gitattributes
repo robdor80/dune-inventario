@@ -1,2 +1,787 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
+  authDomain: "dune-inventario.firebaseapp.com",
+  projectId: "dune-inventario",
+  storageBucket: "dune-inventario.firebasestorage.app",
+  messagingSenderId: "26414027507",
+  appId: "1:26414027507:web:b8970fb32a837d7117dd86"
+};
+
+
+  // Inicializar Firebase en modo compatibilidad
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script>
+  async function guardarDatosEnFirestore(userId) {
+    const datos = {
+      rawResources,
+      refinedResources,
+      objects,
+      vehicles,
+      weapons,
+      objectives,
+      aguaLinterjones: parseInt(localStorage.getItem('aguaLinterjones')) || 0,
+      aguaLitros: parseInt(localStorage.getItem('aguaLitros')) || 0,
+      solaris: parseInt(localStorage.getItem('solaris')) || 0
+    };
+
+    try {
+      await db.collection("users").doc(userId).set(datos);
+      console.log("✅ Datos guardados en Firestore");
+    } catch (error) {
+      console.error("❌ Error al guardar en Firestore:", error);
+    }
+  }
+
+ async function cargarDatosDesdeFirestore(userId) {
+  try {
+    const doc = await db.collection("users").doc(userId).get();
+    if (doc.exists) {
+      const datos = doc.data();
+      rawResources = datos.rawResources || [];
+      refinedResources = datos.refinedResources || [];
+      objects = datos.objects || [];
+      vehicles = datos.vehicles || [];
+      weapons = datos.weapons || [];
+      objectives = datos.objectives || [];
+
+      localStorage.setItem('aguaLinterjones', datos.aguaLinterjones || 0);
+      localStorage.setItem('aguaLitros', datos.aguaLitros || 0);
+      localStorage.setItem('solaris', datos.solaris || 0);
+
+      saveToStorage(); // Guarda en localStorage
+
+      // 🔄 Refrescar visualmente el dashboard y pestañas
+      renderDashboard?.();
+      renderRawResources?.();
+      renderRefinedResources?.();
+      renderObjects?.();
+      renderVehicles?.();
+      renderWeapons?.();
+      renderObjectives?.();
+
+      console.log("✅ Datos cargados desde Firestore y vistas actualizadas");
+    } else {
+      console.log("ℹ️ No hay datos aún en Firestore para este usuario.");
+    }
+  } catch (error) {
+    console.error("❌ Error al cargar desde Firestore:", error);
+  }
+}
+
+
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script>
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const userNameSpan = document.getElementById("userName");
+
+  // Iniciar sesión con Google
+  loginBtn.addEventListener("click", () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(console.error);
+  });
+
+  // Cerrar sesión
+  logoutBtn.addEventListener("click", () => {
+    auth.signOut().catch(console.error);
+  });
+
+  // Detectar cambios en la sesión
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      userNameSpan.textContent = `👤 ${user.displayName}`;
+
+      // Cargar datos del usuario desde Firestore
+      cargarDatosDesdeFirestore(user.uid);
+
+      // Guardar cada 30 segundos automáticamente
+      setInterval(() => guardarDatosEnFirestore(user.uid), 30000);
+    } else {
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      userNameSpan.textContent = "";
+    }
+  });
+
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script>
+
+    const saveBtn = document.getElementById("saveBtn");
+
+saveBtn.addEventListener("click", () => {
+  const user = auth.currentUser;
+  if (user) {
+    guardarDatosEnFirestore(user.uid);
+  } else {
+    alert("Debes iniciar sesión para guardar tus datos.");
+  }
+});
+
+
+// Impuestos
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    alert("Datos de Impuestos guardados.");
+}
+
+// Energía
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    alert("Datos de Energía guardados.");
+}
+
+// Restaurar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+});
+
+
+// Cuenta regresiva de Impuestos
+function iniciarCuentaRegresivaImpuestos() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('impuestosDias')) || 0;
+    const horas = parseInt(localStorage.getItem('impuestosHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('impuestosCountdownTarget', objetivo);
+    actualizarCountdown('impuestosCountdown', objetivo);
+}
+
+function guardarImpuestos() {
+    const cantidad = parseInt(document.getElementById('impuestosCantidad').value) || 0;
+    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+    localStorage.setItem('impuestosCantidad', cantidad);
+    localStorage.setItem('impuestosDias', dias);
+    localStorage.setItem('impuestosHoras', horas);
+    iniciarCuentaRegresivaImpuestos();
+    alert("Datos de Impuestos guardados.");
+}
+
+// Cuenta regresiva de Energía
+function iniciarCuentaRegresivaEnergia() {
+    const ahora = new Date().getTime();
+    const dias = parseInt(localStorage.getItem('energiaDias')) || 0;
+    const horas = parseInt(localStorage.getItem('energiaHoras')) || 0;
+    const objetivo = ahora + (dias * 24 * 60 * 60 + horas * 60 * 60) * 1000;
+    localStorage.setItem('energiaCountdownTarget', objetivo);
+    actualizarCountdown('energiaCountdown', objetivo);
+}
+
+function guardarEnergia() {
+    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+    localStorage.setItem('energiaDias', dias);
+    localStorage.setItem('energiaHoras', horas);
+    iniciarCuentaRegresivaEnergia();
+    alert("Datos de Energía guardados.");
+}
+
+function actualizarCountdown(idElemento, target) {
+    const el = document.getElementById(idElemento);
+    if (!el) return;
+
+    function actualizar() {
+        const ahora = new Date().getTime();
+        const diferencia = target - ahora;
+        if (diferencia <= 0) {
+            el.innerText = "¡Tiempo agotado!";
+            return;
+        }
+        const d = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diferencia % (1000 * 60)) / 1000);
+        el.innerText = `Tiempo restante: ${d}d ${h}h ${m}m ${s}s`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+
+    document.getElementById('impuestosCantidad').value = localStorage.getItem('impuestosCantidad') || 0;
+    document.getElementById('impuestosDias').value = localStorage.getItem('impuestosDias') || 0;
+    document.getElementById('impuestosHoras').value = localStorage.getItem('impuestosHoras') || 0;
+    const targetImp = parseInt(localStorage.getItem('impuestosCountdownTarget'));
+    if (targetImp) actualizarCountdown('impuestosCountdown', targetImp);
+
+    document.getElementById('energiaDias').value = localStorage.getItem('energiaDias') || 0;
+    document.getElementById('energiaHoras').value = localStorage.getItem('energiaHoras') || 0;
+    const targetEn = parseInt(localStorage.getItem('energiaCountdownTarget'));
+    if (targetEn) actualizarCountdown('energiaCountdown', targetEn);
+});
+
+</script>
+<script src="script.js"></script><script src="script.js"></script>
