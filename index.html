@@ -1,0 +1,3604 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dune Awakening - Rastreador de Inventario</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <style>
+        .item-actions .crafting-status {
+            font-size: 0.85rem;
+            margin-right: auto;
+            padding-left: 0.5rem;
+            color: #00ffcc;
+
+
+        }
+
+        /* Reset y configuración base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .save-button {
+            background-color: #1e293b;
+            /* Igual que los otros botones */
+            color: white;
+            border: 2px solid #d88c28;
+            /* Borde especia */
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 8px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .save-button:hover {
+            background-color: #334155;
+            /* Hover igual que otros botones */
+        }
+
+
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a2332 50%, #2d3748 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+
+            background: linear-gradient(135deg, rgba(20, 30, 48, 0.95) 0%, rgba(45, 66, 99, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 3px solid #ffa726;
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-content h1 {
+            color: #ffa726;
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(255, 167, 38, 0.4);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-content p {
+            color: #cbd5e0;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin: 1rem 0;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 3rem 0.75rem 1rem;
+            background: rgba(45, 66, 99, 0.3);
+            border: 2px solid #4a5568;
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #ffa726;
+            background: rgba(45, 66, 99, 0.5);
+            box-shadow: 0 0 15px rgba(255, 167, 38, 0.2);
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            color: #ffa726;
+        }
+
+        .utility-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .utility-btn {
+            background: linear-gradient(135deg, #2d4263 0%, #3d5a80 100%);
+            border: 2px solid #4a5568;
+            color: #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .utility-btn:hover {
+            background: linear-gradient(135deg, #3d5a80 0%, #4a5568 100%);
+            border-color: #ffa726;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 167, 38, 0.2);
+        }
+
+        /* Navegación de pestañas */
+        .nav-tabs {
+            display: flex;
+            background: rgba(20, 30, 48, 0.8);
+            border-bottom: 2px solid #4a5568;
+            overflow-x: auto;
+            padding: 0 2rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            padding: 1.2rem 2rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #e2e8f0;
+            background: rgba(45, 66, 99, 0.3);
+        }
+
+        .tab-btn.active {
+            color: #ffa726;
+            border-bottom-color: #ffa726;
+            background: rgba(255, 167, 38, 0.1);
+        }
+
+        /* Contenido principal */
+        .main-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tab-header h2 {
+            color: #ffa726;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(56, 161, 105, 0.3);
+        }
+
+        .add-btn:hover {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(56, 161, 105, 0.4);
+        }
+
+        /* Filtros */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: rgba(45, 66, 99, 0.3);
+            border: 2px solid #4a5568;
+            color: #e2e8f0;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #ffa726;
+            background: rgba(45, 66, 99, 0.5);
+        }
+
+        /* Contenedor de items */
+        .items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Tarjetas de items */
+        .item-card {
+            background: linear-gradient(135deg, rgba(45, 66, 99, 0.4) 0%, rgba(74, 85, 104, 0.3) 100%);
+            border: 2px solid #4a5568;
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card:hover {
+            border-color: #ffa726;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 167, 38, 0.2);
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ffa726, #ff8f00);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .item-card:hover::before {
+            opacity: 1;
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid #4a5568;
+            background: rgba(74, 85, 104, 0.3);
+        }
+
+        .item-info h3 {
+            color: #e2e8f0;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-category {
+            color: #ffa726;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .item-level {
+            background: rgba(255, 167, 38, 0.2);
+            color: #ffa726;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 0.75rem;
+            background: rgba(20, 30, 48, 0.5);
+            border-radius: 10px;
+        }
+
+        .quantity-label {
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+        }
+
+        .quantity-btn {
+            background: #4a5568;
+            border: none;
+            color: #e2e8f0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: #ffa726;
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            color: #ffa726;
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .item-notes {
+            color: #cbd5e0;
+            font-size: 0.9rem;
+            font-style: italic;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #4a5568;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            background: none;
+            border: 2px solid #4a5568;
+            color: #a0aec0;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:hover {
+            border-color: #4299e1;
+            color: #4299e1;
+        }
+
+        .delete-btn:hover {
+            border-color: #f56565;
+            color: #f56565;
+        }
+
+        /* Tarjetas específicas para objetos/vehículos/armas */
+        .crafting-card {
+            position: relative;
+        }
+
+        .crafting-status {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.6rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .can-craft {
+            background: rgba(56, 161, 105, 0.3);
+            color: #48bb78;
+            border: 1px solid #48bb78;
+        }
+
+        .missing-materials {
+            background: rgba(245, 101, 101, 0.3);
+            color: #f56565;
+            border: 1px solid #f56565;
+        }
+
+        .recipe-info {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(20, 30, 48, 0.5);
+            border-radius: 10px;
+        }
+
+        .recipe-title {
+            color: #ffa726;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .recipe-materials {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(74, 85, 104, 0.3);
+        }
+
+        .material-item:last-child {
+            border-bottom: none;
+        }
+
+        .material-name {
+            color: #e2e8f0;
+        }
+
+        .material-available {
+            color: #48bb78;
+            font-weight: 500;
+        }
+
+        .material-missing {
+            color: #f56565;
+            font-weight: 500;
+        }
+
+        .craft-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #4a5568;
+            font-size: 0.9rem;
+            color: #a0aec0;
+        }
+
+        /* Modales */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            border: 2px solid #4a5568;
+            border-radius: 15px;
+            padding: 0;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .crafting-modal {
+            max-width: 700px;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #2d4263 0%, #3d5a80 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-header h3 {
+            color: #ffa726;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            color: #f56565;
+            background: rgba(245, 101, 101, 0.1);
+        }
+
+        .modal form {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #e2e8f0;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(45, 66, 99, 0.3);
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffa726;
+            background: rgba(45, 66, 99, 0.5);
+            box-shadow: 0 0 10px rgba(255, 167, 38, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #4a5568;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+        }
+
+        .cancel-btn {
+            background: rgba(74, 85, 104, 0.3);
+            border: 2px solid #4a5568;
+            color: #a0aec0;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            border-color: #a0aec0;
+            color: #e2e8f0;
+        }
+
+        /* Receta */
+        #recipeContainer {
+            border: 2px dashed #4a5568;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            min-height: 60px;
+        }
+
+        .recipe-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(45, 66, 99, 0.2);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .recipe-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .recipe-item select {
+            flex: 2;
+            margin: 0;
+        }
+
+        .recipe-item input {
+            flex: 1;
+            margin: 0;
+        }
+
+        .remove-material {
+            background: #f56565;
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-material:hover {
+            background: #e53e3e;
+            transform: scale(0.95);
+        }
+
+        .add-material-btn {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .add-material-btn:hover {
+            background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+            transform: translateY(-1px);
+        }
+
+        /* Calculadora */
+        .calculator-content {
+            padding: 2rem;
+        }
+
+        .calculator-results {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(20, 30, 48, 0.5);
+            border-radius: 10px;
+            border: 2px solid #4a5568;
+        }
+
+        .calculator-results h4 {
+            color: #ffa726;
+            margin-bottom: 1rem;
+        }
+
+        .materials-needed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .needed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(45, 66, 99, 0.3);
+            border-radius: 8px;
+        }
+
+        .needed-sufficient {
+            border-left: 4px solid #48bb78;
+        }
+
+        .needed-insufficient {
+            border-left: 4px solid #f56565;
+        }
+
+        /* Objetivos */
+        .objectives-content {
+            padding: 2rem;
+        }
+
+        .objectives-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .objective-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(45, 66, 99, 0.3);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid #ffa726;
+        }
+
+        .objective-text {
+            flex: 1;
+            color: #e2e8f0;
+        }
+
+        .objective-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .complete-btn {
+            background: #48bb78;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .complete-btn:hover {
+            background: #38a169;
+        }
+
+        .objective-item.completed {
+            opacity: 0.6;
+            border-left-color: #48bb78;
+        }
+
+        .objective-item.completed .objective-text {
+            text-decoration: line-through;
+            color: #a0aec0;
+        }
+
+        /* Estados de carga */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #a0aec0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #a0aec0;
+        }
+
+        .empty-state h3 {
+            color: #ffa726;
+            margin-bottom: 1rem;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-summary {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-left: auto;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .summary-number {
+            color: #ffa726;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(255, 167, 38, 0.3);
+        }
+
+        .summary-label {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .dashboard-card {
+            background: linear-gradient(135deg, rgba(45, 66, 99, 0.4) 0%, rgba(74, 85, 104, 0.3) 100%);
+            border: 2px solid #4a5568;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            border-color: #ffa726;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 167, 38, 0.15);
+        }
+
+        .card-header {
+            background: rgba(20, 30, 48, 0.6);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .card-header h3 {
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .card-subtitle {
+            color: #a0aec0;
+            font-size: 0.8rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dashboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(74, 85, 104, 0.3);
+        }
+
+        .dashboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .dashboard-item-name {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .dashboard-item-value {
+            color: #ffa726;
+            font-weight: 600;
+        }
+
+        .dashboard-item-category {
+            color: #a0aec0;
+            font-size: 0.8rem;
+        }
+
+        .warning-item {
+            border-left: 3px solid #f56565;
+            padding-left: 0.75rem;
+        }
+
+        .success-item {
+            border-left: 3px solid #48bb78;
+            padding-left: 0.75rem;
+        }
+
+        .info-item {
+            border-left: 3px solid #4299e1;
+            padding-left: 0.75rem;
+        }
+
+        .objective-preview {
+            background: rgba(255, 167, 38, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #ffa726;
+        }
+
+        .objective-preview:last-child {
+            margin-bottom: 0;
+        }
+
+        .objective-preview-text {
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .category-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .category-name {
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-count {
+            color: #ffa726;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(74, 85, 104, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffa726, #ff8f00);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .empty-dashboard {
+            text-align: center;
+            padding: 2rem;
+            color: #a0aec0;
+        }
+
+        .empty-dashboard h4 {
+            color: #ffa726;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 3rem;
+            padding: 1rem 0;
+            border-top: 1px solid #444;
+        }
+
+        .legal-notice {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            padding: 0 1rem;
+        }
+
+        .legal-notice a {
+            color: #00ccff;
+            text-decoration: none;
+        }
+
+        .legal-notice a:hover {
+            text-decoration: underline;
+        }
+
+
+
+        .legal-notice {
+            font-size: 0.85rem;
+            color: #999;
+            text-align: center;
+            margin: 0;
+            padding: 0 1rem;
+        }
+
+        .legal-notice a {
+            color: #00ccff;
+            text-decoration: none;
+        }
+
+        .legal-notice a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* Responsive Design */
+
+        /* Tablet Samsung Galaxy S9+ Vertical (768px) */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header-content h1 {
+                font-size: 1.8rem;
+            }
+
+            .utility-buttons {
+                justify-content: center;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .items-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .tab-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: auto;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-height: calc(100vh - 2rem);
+            }
+
+            .form-buttons {
+                flex-direction: column;
+            }
+
+            .nav-tabs {
+                padding: 0 1rem;
+            }
+
+            .tab-btn {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            .dashboard-summary {
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Tablet Horizontal y pantallas medianas (1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .items-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+
+            .utility-buttons {
+                justify-content: flex-start;
+            }
+        }
+
+        /* Pantallas grandes (PC 17") */
+        @media (min-width: 1200px) {
+            .items-container {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+
+            .main-content {
+                padding: 2.5rem;
+            }
+
+            .modal-content {
+                max-width: 700px;
+            }
+
+            .crafting-modal {
+                max-width: 800px;
+            }
+        }
+
+        /* Pantallas muy grandes */
+        @media (min-width: 1400px) {
+            .items-container {
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            }
+        }
+
+        /* Mejoras para touch en tablets */
+        @media (pointer: coarse) {
+            .quantity-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .edit-btn,
+            .delete-btn {
+                width: 45px;
+                height: 45px;
+            }
+
+            .tab-btn {
+                padding: 1.2rem 2rem;
+            }
+
+            .add-btn {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .item-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .modal.show .modal-content {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(74, 85, 104, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ffa726;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff8f00;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-left: auto;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
+        .water-solaris-form {
+            max-width: 400px;
+            margin: 2rem auto;
+            background: rgba(45, 66, 99, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid #4a5568;
+        }
+
+        .water-solaris-form .form-group {
+            margin-bottom: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <!-- Sección izquierda: título + subtítulo + buscador -->
+        <div style="width: 100%; max-width: 100%;">
+            <h1>🏜️ DUNE AWAKENING</h1>
+            <p>Rastreador de Inventario</p>
+
+            <!-- Búsqueda debajo -->
+            <div class="search-container"
+                style="margin-top: 0.75rem; display: flex; gap: 0.25rem; align-items: center; max-width: 400px;">
+                <input type="text" id="globalSearch" placeholder="Buscar items..." class="search-input"
+                    style="flex: 1;">
+                <button id="clearSearch" class="clear-btn">✕</button>
+            </div>
+        </div>
+
+        <!-- Sección derecha: botones de utilidad -->
+        <div class="header-buttons"
+            style="margin-top: 1rem; display: flex; align-items: center; flex-wrap: wrap; gap: 1rem;">
+
+            <!-- Botones de utilidad -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button id="exportBtn" class="utility-btn">📊 Exportar</button>
+                <button id="importBtn" class="utility-btn">📥 Importar</button>
+                <button id="calculatorBtn" class="utility-btn">🧮 Calculadora</button>
+                <button id="objectivesBtn" class="utility-btn">🎯 Objetivos</button>
+                <button id="saveBtn" class="save-button">💾 Guardar</button>
+
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+
+            <!-- Botones de sesión -->
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button id="loginBtn" class="utility-btn">🔐 Iniciar sesión</button>
+                <button id="logoutBtn" class="utility-btn" style="display: none;">🔓 Cerrar sesión</button>
+            </div>
+            <p></p>
+
+            <!-- Nombre de usuario a la derecha -->
+            <div id="userNameContainer" style="margin-left: auto; color: #fff; font-size: 0.9rem;">
+                <span id="userName"></span>
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- Navegación de Pestañas -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="agua">💧 Agua</button>
+        <button class="tab-btn" data-tab="solaris">💰 Solaris</button>
+        <button class="tab-btn" data-tab="impuestos">🏛️ Impuestos</button>
+        <button class="tab-btn" data-tab="raw">🗿 Recursos en bruto</button>
+        <button class="tab-btn" data-tab="refined">⚗️ Recursos refinados</button>
+        <button class="tab-btn" data-tab="objects">🔧 Objetos</button>
+        <button class="tab-btn" data-tab="vehicles">🚗 Vehículos</button>
+        <button class="tab-btn" data-tab="weapons">⚔️ Armas</button>
+        <button class="tab-btn" data-tab="webs">🌐 Webs</button>
+        <button class="tab-btn" data-tab="mapa">🗺️ Mapa</button>
+
+    </nav>
+
+
+    <!-- Contenido Principal -->
+    <main class="main-content">
+
+        <!-- Pestaña Dashboard -->
+        <section id="dashboard-tab" class="tab-content active">
+            <div class="tab-header">
+                <h2>📊 Dashboard</h2>
+                <div class="dashboard-summary">
+                    <div class="summary-item">
+                        <span class="summary-number" id="totalItems">0</span>
+                        <span class="summary-label">Total Items</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number" id="totalObjectives">0</span>
+                        <span class="summary-label">Objetivos</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number" id="craftableItems">0</span>
+                        <span class="summary-label">Puedo Crear</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Impuestos -->
+                <div class="dashboard-card" id="impuestosDashboardCard" style="display: none;">
+                    <div class="card-header">
+                        <h3>⏳ Impuestos</h3>
+                        <span class="card-subtitle">Cuenta regresiva</span>
+                    </div>
+                    <div class="card-content">
+                        <p id="impuestosCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
+                    </div>
+                </div>
+
+                <!-- Recursos Escasos -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>⚠️ Recursos Escasos</h3>
+                        <span class="card-subtitle">Cantidad < 10</span>
+                    </div>
+                    <div class="card-content" id="lowResourcesContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Items Creables -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🔧 Puedes Crear</h3>
+                        <span class="card-subtitle">Materiales disponibles</span>
+                    </div>
+                    <div class="card-content" id="craftableItemsContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Objetivos Pendientes -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🎯 Objetivos Pendientes</h3>
+                        <span class="card-subtitle">Por completar</span>
+                    </div>
+                    <div class="card-content" id="pendingObjectivesContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Estadísticas por Categoría -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>📈 Por Categorías</h3>
+                        <span class="card-subtitle">Distribución de recursos</span>
+                    </div>
+                    <div class="card-content" id="categoryStatsContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Top 5 Recursos -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🥇 Top 5 Recursos</h3>
+                        <span class="card-subtitle">Más abundantes</span>
+                    </div>
+                    <div class="card-content" id="topResourcesContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Estado del Inventario -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>⏰ Estado del Inventario</h3>
+                        <span class="card-subtitle">Resumen general</span>
+                    </div>
+                    <div class="card-content" id="inventoryStatusContent">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pestaña Agua -->
+        <section id="agua-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>💧 Gestión del Agua</h2>
+            </div>
+
+            <div class="water-solaris-form">
+                <div class="form-group">
+                    <label for="aguaLinterjones">Linterjones (cantimploras):</label>
+                    <input type="number" id="aguaLinterjones" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="aguaLitros">Litros en cisternas de la base:</label>
+                    <input type="number" id="aguaLitros" min="0" value="0">
+                </div>
+
+                <div class="form-buttons">
+                    <button class="submit-btn" onclick="guardarAgua()">Guardar</button>
+                </div>
+            </div>
+        </section>
+
+
+
+
+        <!-- Pestaña Solaris dinero -->
+        <section id="solaris-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>💰 Solaris</h2>
+            </div>
+
+            <div class="water-solaris-form">
+                <div class="form-group">
+                    <label for="solarisCantidad">Cantidad de Solaris:</label>
+                    <input type="number" id="solarisCantidad" value="0">
+                </div>
+
+                <div class="form-buttons">
+                    <button class="submit-btn" onclick="guardarSolaris()">Guardar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pestaña Impuestos -->
+        <section id="impuestos-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🏛️ Impuestos</h2>
+                <button class="add-btn" id="addImpuestoBtn">+ Añadir nuevos datos</button>
+            </div>
+
+            <div class="water-solaris-form" id="impuestosFormContainer" style="display:none;">
+                <div class="form-group">
+                    <label for="impuestosDias">Días restantes:</label>
+                    <input type="number" id="impuestosDias" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="impuestosHoras">Horas restantes:</label>
+                    <input type="number" id="impuestosHoras" min="0" value="0">
+                </div>
+
+                <div class="form-buttons">
+                    <button class="submit-btn" id="guardarImpuestosBtn">Guardar</button>
+                </div>
+            </div>
+
+            <div id="impuestosCuentaRegresiva" class="dashboard-card" style="margin-top: 2rem; display:none;">
+                <div class="card-header">
+                    <h3>⏳ Impuestos</h3>
+                    <span class="card-subtitle">Cuenta regresiva</span>
+                </div>
+                <div class="card-content">
+                    <p id="impuestosCountdownTexto" style="font-size: 1.2rem; color: #ffa726;"></p>
+                </div>
+            </div>
+        </section>
+
+
+
+
+
+        <!-- Pestaña Recursos en bruto -->
+        <section id="raw-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🗿 Recursos en bruto</h2>
+                <button class="add-btn" id="addRawBtn">+ Añadir Recurso</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <select id="rawCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Minerales">Minerales</option>
+                    <option value="Metales">Metales</option>
+                    <option value="Orgánicos">Orgánicos</option>
+                    <option value="Combustibles">Combustibles</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="rawLevelFilter" class="filter-select">
+                    <option value="">Todos los tiers</option>
+                    <option value="0">Tier 0</option>
+                    <option value="1">Tier 1</option>
+                    <option value="2">Tier 2</option>
+                </select>
+            </div>
+
+            <div id="rawContainer" class="items-container">
+                <!-- Items se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Pestaña Recursos refinados -->
+        <section id="refined-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>⚗️ Recursos refinados</h2>
+                <button class="add-btn" id="addRefinedBtn">+ Añadir Recurso</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <select id="refinedCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Lingotes">Lingotes</option>
+                    <option value="Combustibles">Combustibles</option>
+                    <option value="Componentes">Componentes</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="refinedLevelFilter" class="filter-select">
+                    <option value="">Todos los tiers</option>
+                    <option value="0">Tier 0</option>
+                    <option value="1">Tier 1</option>
+                    <option value="2">Tier 2</option>
+                </select>
+            </div>
+
+            <div id="refinedContainer" class="items-container">
+                <!-- Items se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Pestaña Objetos -->
+        <section id="objects-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🔧 Objetos</h2>
+                <button class="add-btn" id="addObjectBtn">+ Añadir Objeto</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <select id="objectCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Herramientas">Herramientas</option>
+                    <option value="Consumibles">Consumibles</option>
+                    <option value="Estructuras">Estructuras</option>
+                    <option value="Componentes">Componentes</option>
+                    <option value="Vehiculares">Vehiculares</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="objectStatusFilter" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="can-craft">Puedo crear</option>
+                    <option value="missing-materials">Faltan materiales</option>
+                </select>
+            </div>
+
+            <div id="objectContainer" class="items-container">
+                <!-- Items se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Pestaña Vehículos -->
+        <section id="vehicles-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🚗 Vehículos</h2>
+                <button class="add-btn" id="addVehicleBtn">+ Añadir Vehículo</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <select id="vehicleCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Ornitópteros">Ornitópteros</option>
+                    <option value="Moto de arena">Moto de arena</option>
+                    <option value="Naves">Naves</option>
+                    <option value="Módulos">Módulos</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="vehicleStatusFilter" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="can-craft">Puedo crear</option>
+                    <option value="missing-materials">Faltan materiales</option>
+                </select>
+            </div>
+
+            <div id="vehicleContainer" class="items-container">
+                <!-- Items se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Pestaña Armas -->
+        <section id="weapons-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>⚔️ Armas</h2>
+                <button class="add-btn" id="addWeaponBtn">+ Añadir Arma</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters">
+                <select id="weaponCategoryFilter" class="filter-select">
+                    <option value="">Todas las categorías</option>
+                    <option value="Hoja corta">Hoja corta</option>
+                    <option value="Hoja larga">Hoja larga</option>
+                    <option value="Rifles">Rifles</option>
+                    <option value="Pistolas">Pistolas</option>
+                    <option value="Explosivos">Explosivos</option>
+                    <option value="Láseres">Láseres</option>
+                    <option value="Armas pesadas">Armas pesadas</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <select id="weaponStatusFilter" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="can-craft">Puedo crear</option>
+                    <option value="missing-materials">Faltan materiales</option>
+                </select>
+            </div>
+
+            <div id="weaponContainer" class="items-container">
+                <!-- Items se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Pestaña Webs -->
+        <section id="webs-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🌐 Webs</h2>
+
+            </div>
+
+            <div class="items-container">
+                <div class="item-card">
+                    <div class="item-header">
+                        <img src="https://gtcdn.info/gt/gt.svg" class="item-image" alt="Dune Awakening">
+                        <div class="item-info">
+                            <h3>Dune Awakening</h3>
+                            <div class="item-category">Database</div>
+                        </div>
+                    </div>
+                    <div class="item-notes">Accede a información sobre recursos de Dune Awakening.</div>
+                    <div class="item-actions">
+                        <a href="https://dune.gaming.tools/" target="_blank" rel="noopener noreferrer"
+                            class="utility-btn">🌐 Visitar</a>
+                    </div>
+                </div>
+
+                <div class="item-card">
+                    <div class="item-header">
+                        <img src="https://duneawakening.wiki.fextralife.com/file/XDune-Awakening/dune-awakening-wiki-logo.png"
+                            class="item-image" alt="Dune Awakening">
+                        <div class="item-info">
+                            <h3>Dune Awakening</h3>
+                            <div class="item-category">Wiki</div>
+                        </div>
+                    </div>
+                    <div class="item-notes">Accede a información sobre recursos de Dune Awakening.</div>
+                    <div class="item-actions">
+                        <a href="https://duneawakening.wiki.fextralife.com/Dune+Awakening+Wiki" target="_blank"
+                            rel="noopener noreferrer" class="utility-btn">🌐 Visitar</a>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+        <!-- Pestaña Mapa -->
+        <section id="mapa-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>🗺️ Mapa</h2>
+
+            </div>
+
+            <div class="items-container">
+                <div class="item-card">
+                    <div class="item-header">
+                        <img src="https://imgs.search.brave.com/gfVF4-jWzhYINCPV2OJZFG-VE26tnpYk5I_VBgkuN84/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9kdW5l/YXdha2VuaW5nLndp/a2kuZmV4dHJhbGlm/ZS5jb20vZmlsZS9E/dW5lLUF3YWtlbmlu/Zy9kdW5lLWF3YWtl/bmluZy13aWtpLWxv/Z28tMi5wbmc"
+                            class="item-image" alt="Mapa">
+                        <div class="item-info">
+                            <h3>Mapa Interactivo de Dune</h3>
+                            <div class="item-category">Dune Awakening Community Wiki</div>
+                        </div>
+                    </div>
+                    <div class="item-notes">Explora ubicaciones, rutas y puntos de interés en el mundo de Arrakis.</div>
+                    <div class="item-actions">
+                        <a href="https://awakening.wiki/Interactive_Map" target="_blank" rel="noopener noreferrer"
+                            class="utility-btn">📍 Ver Mapa</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legal-notice" style="margin-top: 2rem;">
+                Fuente del mapa interactivo:
+                <a href="https://awakening.wiki/Interactive_Map" target="_blank" rel="noopener noreferrer">
+                    Dune Awakening Wiki - Interactive Map
+                </a>.
+                Recuperado de awakening.wiki, bajo los términos de atribución correspondientes a sus autores.
+                Esta web no tiene fines comerciales.
+            </div>
+
+        </section>
+
+
+
+
+        <!-- Footer -->
+
+        <footer>
+            <div class="legal-notice">
+                <p>
+                    Las imágenes utilizadas en esta web son propiedad de sus respectivos autores. Se emplean sin ánimo
+                    de lucro y únicamente con fines informativos y decorativos relacionados con el universo del juego.
+                    Si eres titular de los derechos de alguna imagen y deseas que sea retirada, por favor contáctame en
+                    <a href="mailto:rob.dor.80@gmail.com">rob.dor.80@gmail.com</a> y se eliminará de inmediato.
+                </p>
+                <p>Web creada por <strong>Roberto Dorado Rodríguez</strong> © 2025</p>
+            </div>
+        </footer>
+
+
+
+    </main>
+
+
+
+
+    <!-- Modal para Añadir/Editar Recursos -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="resourceModalTitle">Añadir Recurso</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="resourceForm">
+                <div class="form-group">
+                    <label for="resourceName">Nombre del Recurso:</label>
+                    <input type="text" id="resourceName" required>
+                </div>
+                <div class="form-group">
+                    <label for="resourceCategory">Categoría:</label>
+                    <select id="resourceCategory" required>
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Minerales">Minerales</option>
+                        <option value="Metales">Metales</option>
+                        <option value="Orgánicos">Orgánicos</option>
+                        <option value="Combustibles">Combustibles</option>
+                        <option value="Lingotes">Lingotes</option>
+                        <option value="Componentes">Componentes</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="resourceLevel">Tier:</label>
+                    <select id="resourceLevel" required>
+                        <option value="0">Tier 0</option>
+                        <option value="1">Tier 1</option>
+                        <option value="2">Tier 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="resourceQuantity">Cantidad:</label>
+                    <input type="number" id="resourceQuantity" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="resourceImage">URL de Imagen:</label>
+                    <input type="url" id="resourceImage" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="resourceNotes">Notas (opcional):</label>
+                    <textarea id="resourceNotes" rows="3"></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">Guardar</button>
+                    <button type="button" class="cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Añadir/Editar Objetos/Vehículos/Armas -->
+    <div id="craftingModal" class="modal">
+        <div class="modal-content crafting-modal">
+            <div class="modal-header">
+                <h3 id="craftingModalTitle">Añadir Objeto</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <form id="craftingForm">
+                <div class="form-group">
+                    <label for="craftingName">Nombre:</label>
+                    <input type="text" id="craftingName" required>
+                </div>
+                <div class="form-group">
+                    <label for="craftingCategory">Categoría:</label>
+                    <select id="craftingCategory" required>
+                        <option value="">Seleccionar categoría</option>
+                        <!-- Las opciones se llenan dinámicamente según el tipo -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="craftingImage">URL de Imagen:</label>
+                    <input type="url" id="craftingImage" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="craftingTool">Herramienta Necesaria:</label>
+                    <select id="craftingTool">
+                        <option value="">Ninguna</option>
+                        <option value="Fabricator">Fabricator</option>
+                        <option value="Workbench">Workbench</option>
+                        <option value="Refinery">Refinery</option>
+                        <option value="Constructor">Constructor</option>
+                        <option value="Advanced Fabricator">Advanced Fabricator</option>
+                        <option value="Vehicle Assembly">Vehicle Assembly</option>
+                        <option value="Weapon Forge">Weapon Forge</option>
+                        <option value="Other">Otra</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="craftingTime">Tiempo (segundos):</label>
+                        <input type="number" id="craftingTime" min="0" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="craftingYield">Produce (cantidad):</label>
+                        <input type="number" id="craftingYield" min="1" value="1">
+                    </div>
+                </div>
+
+                <!-- Receta (Materiales) -->
+                <div class="form-group">
+                    <label>Materiales Necesarios:</label>
+                    <div id="recipeContainer">
+                        <!-- Materiales se añaden dinámicamente -->
+                    </div>
+                    <button type="button" id="addMaterialBtn" class="add-material-btn">+ Añadir Material</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="craftingNotes">Notas (opcional):</label>
+                    <textarea id="craftingNotes" rows="3"></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">Guardar</button>
+                    <button type="button" class="cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Calculadora -->
+    <div id="calculatorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Calculadora de Creación</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="calculator-content">
+                <div class="form-group">
+                    <label for="calcItem">Objeto a crear:</label>
+                    <select id="calcItem">
+                        <option value="">Seleccionar objeto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="calcQuantity">Cantidad deseada:</label>
+                    <input type="number" id="calcQuantity" min="1" value="1">
+                </div>
+                <button id="calculateBtn" class="submit-btn">Calcular</button>
+                <div id="calculatorResults" class="calculator-results">
+                    <!-- Resultados aparecen aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Objetivos -->
+    <div id="objectivesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Lista de Objetivos</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="objectives-content">
+                <div class="form-group">
+                    <input type="text" id="newObjective" placeholder="Añadir nuevo objetivo...">
+                    <button id="addObjectiveBtn" class="add-btn" style="margin-top: 0.75rem;">Añadir</button>
+
+                </div>
+                <div id="objectivesList" class="objectives-list">
+                    <!-- Objetivos aparecen aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let rawResources = [];
+        let refinedResources = [];
+        let objects = [];
+        let vehicles = [];
+        let weapons = [];
+        let objectives = [];
+        let editingItem = null;
+        let editingType = null;
+        let changeCount = 0;
+
+        // Categorías por tipo
+        const categoryOptions = {
+            objects: [
+                'Herramientas',
+                'Consumibles',
+                'Estructuras',
+                'Componentes',
+                'Vehiculares',
+                'Otros'
+            ],
+            vehicles: [
+                'Ornitópteros',
+                'Moto de arena',
+                'Naves',
+                'Módulos',
+                'Otros'
+            ],
+            weapons: [
+                'Hoja corta',
+                'Hoja larga',
+                'Rifles',
+                'Pistolas',
+                'Explosivos',
+                'Láseres',
+                'Armas pesadas',
+                'Otros'
+            ]
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeApp();
+            renderAguaTab();
+
+        });
+
+        function initializeApp() {
+            loadDataFromStorage();
+            setupEventListeners();
+            renderAllTabs();
+            populateCalculatorDropdown();
+            renderObjectives();
+            renderDashboard();
+        }
+
+        // Gestión de almacenamiento
+        function loadDataFromStorage() {
+            try {
+                rawResources = JSON.parse(localStorage.getItem('duneRawResources')) || [];
+                refinedResources = JSON.parse(localStorage.getItem('duneRefinedResources')) || [];
+
+                // Migrar datos existentes de craftingItems
+                const oldCraftingItems = JSON.parse(localStorage.getItem('duneCraftingItems')) || [];
+
+                objects = JSON.parse(localStorage.getItem('duneObjects')) || [];
+                vehicles = JSON.parse(localStorage.getItem('duneVehicles')) || [];
+                weapons = JSON.parse(localStorage.getItem('duneWeapons')) || [];
+
+                // Si no hay datos nuevos pero hay craftingItems, migrar
+                if (objects.length === 0 && vehicles.length === 0 && weapons.length === 0 && oldCraftingItems.length > 0) {
+                    migrateOldCraftingData(oldCraftingItems);
+                }
+
+                objectives = JSON.parse(localStorage.getItem('duneObjectives')) || [];
+
+                // Asegurar que objetos tengan campo quantity
+                [objects, vehicles, weapons].forEach(collection => {
+                    collection.forEach(item => {
+                        if (item.quantity === undefined) {
+                            item.quantity = 0;
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
+                resetAllData();
+            }
+        }
+
+        function migrateOldCraftingData(oldItems) {
+            // Distribuir items según sus categorías
+            oldItems.forEach(item => {
+                if (!item.category) return;
+
+                if (['Ornitópteros', 'Moto de arena', 'Naves', 'Módulos'].includes(item.category)) {
+                    vehicles.push(item);
+                } else if (['Hoja corta', 'Hoja larga', 'Rifles', 'Pistolas', 'Explosivos', 'Láseres', 'Armas pesadas'].includes(item.category)) {
+                    weapons.push(item);
+                } else {
+                    objects.push(item);
+                }
+            });
+
+            // Limpiar datos antiguos
+            localStorage.removeItem('duneCraftingItems');
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            try {
+                localStorage.setItem('duneRawResources', JSON.stringify(rawResources));
+                localStorage.setItem('duneRefinedResources', JSON.stringify(refinedResources));
+                localStorage.setItem('duneObjects', JSON.stringify(objects));
+                localStorage.setItem('duneVehicles', JSON.stringify(vehicles));
+                localStorage.setItem('duneWeapons', JSON.stringify(weapons));
+                localStorage.setItem('duneObjectives', JSON.stringify(objectives));
+
+                changeCount++;
+                if (changeCount >= 5) {
+                    createBackup();
+                    changeCount = 0;
+                }
+
+                updateDashboardIfVisible();
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('Error al guardar datos. El almacenamiento local puede estar lleno.');
+            }
+        }
+
+        function updateDashboardIfVisible() {
+            if (document.getElementById('totalItems')) {
+                renderDashboard();
+            }
+        }
+
+        function createBackup() {
+            const backup = {
+                rawResources,
+                refinedResources,
+                objects,
+                vehicles,
+                weapons,
+                objectives,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('duneBackup', JSON.stringify(backup));
+        }
+
+        function resetAllData() {
+            rawResources = [];
+            refinedResources = [];
+            objects = [];
+            vehicles = [];
+            weapons = [];
+            objectives = [];
+            saveToStorage();
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Pestañas
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+
+            // Botones principales
+            document.getElementById('addRawBtn').addEventListener('click', () => openResourceModal('raw'));
+            document.getElementById('addRefinedBtn').addEventListener('click', () => openResourceModal('refined'));
+            document.getElementById('addObjectBtn').addEventListener('click', () => openCraftingModal('objects'));
+            document.getElementById('addVehicleBtn').addEventListener('click', () => openCraftingModal('vehicles'));
+            document.getElementById('addWeaponBtn').addEventListener('click', () => openCraftingModal('weapons'));
+
+            // Utilidades
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+            document.getElementById('importFile').addEventListener('change', importData);
+            document.getElementById('calculatorBtn').addEventListener('click', openCalculatorModal);
+            document.getElementById('objectivesBtn').addEventListener('click', openObjectivesModal);
+
+            // Búsqueda
+            document.getElementById('globalSearch').addEventListener('input', handleGlobalSearch);
+            document.getElementById('clearSearch').addEventListener('click', clearSearch);
+
+            // Filtros
+            setupFilterListeners();
+
+            // Modales
+            setupModalListeners();
+        }
+
+        function setupFilterListeners() {
+            document.getElementById('rawCategoryFilter').addEventListener('change', () => renderTab('raw'));
+            document.getElementById('rawLevelFilter').addEventListener('change', () => renderTab('raw'));
+            document.getElementById('refinedCategoryFilter').addEventListener('change', () => renderTab('refined'));
+            document.getElementById('refinedLevelFilter').addEventListener('change', () => renderTab('refined'));
+            document.getElementById('objectCategoryFilter').addEventListener('change', () => renderTab('objects'));
+            document.getElementById('objectStatusFilter').addEventListener('change', () => renderTab('objects'));
+            document.getElementById('vehicleCategoryFilter').addEventListener('change', () => renderTab('vehicles'));
+            document.getElementById('vehicleStatusFilter').addEventListener('change', () => renderTab('vehicles'));
+            document.getElementById('weaponCategoryFilter').addEventListener('change', () => renderTab('weapons'));
+            document.getElementById('weaponStatusFilter').addEventListener('change', () => renderTab('weapons'));
+        }
+
+        function setupModalListeners() {
+            // Cerrar modales
+            document.querySelectorAll('.close-btn').forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+
+            // Cerrar modal al hacer clic fuera
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeAllModals();
+                });
+            });
+
+            // Formularios
+            document.getElementById('resourceForm').addEventListener('submit', handleResourceSubmit);
+            document.getElementById('craftingForm').addEventListener('submit', handleCraftingSubmit);
+
+            // Específicos de objetos/vehículos/armas
+            document.getElementById('addMaterialBtn').addEventListener('click', addMaterialToRecipe);
+
+            // Calculadora
+            document.getElementById('calculateBtn').addEventListener('click', performCalculation);
+
+            // Objetivos
+            document.getElementById('addObjectiveBtn').addEventListener('click', addObjective);
+            document.getElementById('newObjective').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addObjective();
+            });
+        }
+
+        // Navegación de pestañas
+        function switchTab(tabName) {
+            // Actualizar botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Mostrar contenido
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Renderizar contenido
+            renderTab(tabName);
+        }
+
+        // Agua
+        function guardarAgua() {
+            const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
+            const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+
+            localStorage.setItem('aguaLitros', litros);
+            localStorage.setItem('aguaLinterjones', linterjones);
+
+            alert("Datos de agua guardados.");
+        }
+
+
+
+        // Solaris
+        function guardarSolaris() {
+            const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
+            localStorage.setItem('solaris', cantidad);
+            alert("Cantidad de Solaris guardada.");
+        }
+
+        // Al cargar, restaurar valores
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
+            document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+            document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
+        });
+
+
+        // Renderizado
+        function renderAllTabs() {
+            renderTab('raw');
+            renderTab('refined');
+            renderTab('objects');
+            renderTab('vehicles');
+            renderTab('weapons');
+        }
+
+        function renderDashboard() {
+            // Calcular estadísticas generales
+            const totalItems = [...rawResources, ...refinedResources, ...objects, ...vehicles, ...weapons]
+                .reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const totalObjectives = objectives.length;
+            const completedObjectives = objectives.filter(obj => obj.completed).length;
+            const pendingObjectives = objectives.filter(obj => !obj.completed);
+
+            // Calcular items creables
+            const craftableCount = [...refinedResources, ...objects, ...vehicles, ...weapons].filter(item => {
+                if (!item.recipe || item.recipe.length === 0) return false;
+                const status = getCraftingStatus(item);
+                return status.canCraft;
+            }).length;
+
+            // Actualizar resumen superior
+            document.getElementById('totalItems').textContent = totalItems.toLocaleString();
+            document.getElementById('totalObjectives').textContent = `${completedObjectives}/${totalObjectives}`;
+            document.getElementById('craftableItems').textContent = craftableCount;
+
+            // Renderizar cada sección
+            renderLowResources();
+            renderCraftableItems();
+            renderPendingObjectives();
+            renderCategoryStats();
+            renderTopResources();
+            renderInventoryStatus();
+        }
+
+        function renderLowResources() {
+            const container = document.getElementById('lowResourcesContent');
+            const allResources = [...rawResources, ...refinedResources];
+            const lowResources = allResources.filter(resource => resource.quantity < 10).sort((a, b) => a.quantity - b.quantity);
+
+            if (lowResources.length === 0) {
+                container.innerHTML = '<div class="empty-dashboard"><h4>¡Excelente!</h4><p>No tienes recursos escasos</p></div>';
+                return;
+            }
+
+            container.innerHTML = lowResources.slice(0, 8).map(resource => `
+                <div class="dashboard-item warning-item">
+                    <div>
+                        <div class="dashboard-item-name">${resource.name}</div>
+                        <div class="dashboard-item-category">${resource.category} • Tier ${resource.level}</div>
+                    </div>
+                    <div class="dashboard-item-value">${resource.quantity}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCraftableItems() {
+            const container = document.getElementById('craftableItemsContent');
+
+            const allItems = [...refinedResources, ...objects, ...vehicles, ...weapons];
+
+            console.log("Moto de arena (debug):", vehicles.find(v => v.name.toLowerCase().includes("moto")));
+            console.log("Status:", getCraftingStatus(vehicles.find(v => v.name.toLowerCase().includes("moto"))));
+
+
+            const allCraftable = allItems.filter(item => {
+                if (!item.recipe || !Array.isArray(item.recipe) || item.recipe.length === 0) return false;
+                const status = getCraftingStatus(item);
+                return status.canCraft;
+            });
+
+            if (allCraftable.length === 0) {
+                container.innerHTML = '<div class="empty-dashboard"><h4>Sin materiales</h4><p>Necesitas más recursos para crear</p></div>';
+                return;
+            }
+
+            container.innerHTML = allCraftable.map(item => {
+
+                const maxCraftable = getMaxCraftable(item);
+
+                // Detección robusta del tipo de item
+                let itemType = 'Otro';
+                if (refinedResources.find(r => r.id === item.id)) itemType = 'Refinado';
+                else if (objects.find(o => o.id === item.id)) itemType = 'Objeto';
+                else if (vehicles.find(v => v.id === item.id)) itemType = 'Vehículo';
+                else if (weapons.find(w => w.id === item.id)) itemType = 'Arma';
+
+                return `
+            <div class="dashboard-item success-item">
+                <div>
+                    <div class="dashboard-item-name">${item.name}</div>
+                    <div class="dashboard-item-category">${item.category} (${itemType})</div>
+                </div>
+                <div class="dashboard-item-value">×${maxCraftable}</div>
+            </div>
+        `;
+            }).join('');
+        }
+
+
+        function renderPendingObjectives() {
+            const container = document.getElementById('pendingObjectivesContent');
+            const pending = objectives.filter(obj => !obj.completed);
+
+            if (pending.length === 0) {
+                container.innerHTML = '<div class="empty-dashboard"><h4>¡Todo completado!</h4><p>No tienes objetivos pendientes</p></div>';
+                return;
+            }
+
+            container.innerHTML = pending.slice(0, 5).map(objective => `
+                <div class="objective-preview">
+                    <div class="objective-preview-text">${objective.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategoryStats() {
+            const container = document.getElementById('categoryStatsContent');
+            const allResources = [...rawResources, ...refinedResources];
+            const categories = {};
+
+            // Contar por categorías
+            allResources.forEach(resource => {
+                if (!categories[resource.category]) {
+                    categories[resource.category] = { count: 0, total: 0 };
+                }
+                categories[resource.category].count++;
+                categories[resource.category].total += resource.quantity;
+            });
+
+            if (Object.keys(categories).length === 0) {
+                container.innerHTML = '<div class="empty-dashboard"><h4>Sin datos</h4><p>Añade recursos para ver estadísticas</p></div>';
+                return;
+            }
+
+            const maxTotal = Math.max(...Object.values(categories).map(cat => cat.total));
+
+            container.innerHTML = Object.entries(categories).map(([name, data]) => {
+                const percentage = maxTotal > 0 ? (data.total / maxTotal) * 100 : 0;
+                return `
+                    <div class="category-stat">
+                        <div class="category-name">
+                            <span>${name}</span>
+                        </div>
+                        <div class="category-count">${data.total}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderTopResources() {
+            const container = document.getElementById('topResourcesContent');
+            const allResources = [...rawResources, ...refinedResources]
+                .filter(resource => resource.quantity > 0)
+                .sort((a, b) => b.quantity - a.quantity);
+
+            if (allResources.length === 0) {
+                container.innerHTML = '<div class="empty-dashboard"><h4>Inventario vacío</h4><p>Añade recursos para ver el ranking</p></div>';
+                return;
+            }
+
+            container.innerHTML = allResources.slice(0, 5).map((resource, index) => {
+                const medal = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][index];
+                return `
+                    <div class="dashboard-item info-item">
+                        <div>
+                            <div class="dashboard-item-name">${medal} ${resource.name}</div>
+                            <div class="dashboard-item-category">${resource.category}</div>
+                        </div>
+                        <div class="dashboard-item-value">${resource.quantity}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderInventoryStatus() {
+            const container = document.getElementById('inventoryStatusContent');
+
+            const totalRaw = rawResources.reduce((sum, item) => sum + item.quantity, 0);
+            const totalRefined = refinedResources.reduce((sum, item) => sum + item.quantity, 0);
+            const totalObjects = objects.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const totalVehicles = vehicles.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            const totalWeapons = weapons.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+            const uniqueRaw = rawResources.length;
+            const uniqueRefined = refinedResources.length;
+            const uniqueObjects = objects.length;
+            const uniqueVehicles = vehicles.length;
+            const uniqueWeapons = weapons.length;
+
+            const completedObj = objectives.filter(obj => obj.completed).length;
+            const totalObj = objectives.length;
+            const objPercentage = totalObj > 0 ? Math.round((completedObj / totalObj) * 100) : 0;
+
+            container.innerHTML = `
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Recursos en bruto</div>
+                    <div class="dashboard-item-value">${totalRaw} (${uniqueRaw} tipos)</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Recursos refinados</div>
+                    <div class="dashboard-item-value">${totalRefined} (${uniqueRefined} tipos)</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Objetos</div>
+                    <div class="dashboard-item-value">${totalObjects} (${uniqueObjects} tipos)</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Vehículos</div>
+                    <div class="dashboard-item-value">${totalVehicles} (${uniqueVehicles} tipos)</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Armas</div>
+                    <div class="dashboard-item-value">${totalWeapons} (${uniqueWeapons} tipos)</div>
+                </div>
+                <div class="dashboard-item">
+                    <div class="dashboard-item-name">Progreso Objetivos</div>
+                    <div class="dashboard-item-value">${objPercentage}%</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${objPercentage}%"></div>
+                </div>
+            `;
+        }
+
+        function renderTab(tabName) {
+            switch (tabName) {
+                case 'raw':
+                    renderResources(rawResources, 'rawContainer', 'raw');
+                    break;
+                case 'refined':
+                    renderResources(refinedResources, 'refinedContainer', 'refined');
+                    break;
+                case 'objects':
+                    renderCrafting(objects, 'objectContainer', 'objects');
+                    break;
+                case 'vehicles':
+                    renderCrafting(vehicles, 'vehicleContainer', 'vehicles');
+                    break;
+                case 'weapons':
+                    renderCrafting(weapons, 'weaponContainer', 'weapons');
+                    break;
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'webs':
+                    // Puedes poner renderWebs() si haces lógica luego
+                    break;
+
+            }
+        }
+
+        function renderResources(resources, containerId, type) {
+            const container = document.getElementById(containerId);
+            const filteredResources = filterResources(resources, type);
+
+            if (filteredResources.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No hay recursos</h3>
+                        <p>Añade tu primer recurso usando el botón correspondiente</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredResources.map(resource => `
+                <div class="item-card" data-id="${resource.id}">
+                    <div class="item-header">
+                        <img src="${resource.image || getDefaultImage('resource')}" 
+                             alt="${resource.name}" class="item-image"
+                             onerror="this.src='${getDefaultImage('resource')}'">
+                        <div class="item-info">
+                            <h3>${resource.name}</h3>
+                            <div class="item-category">${resource.category}</div>
+                        </div>
+                        <div class="item-level">Tier ${resource.level}</div>
+                    </div>
+                    
+                    <div class="item-quantity">
+                        <span class="quantity-label">Cantidad:</span>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="changeQuantity('${resource.id}', '${type}', -1)">-</button>
+                            <span class="quantity-display">${resource.quantity}</span>
+                            <button class="quantity-btn" onclick="changeQuantity('${resource.id}', '${type}', 1)">+</button>
+                        </div>
+                    </div>
+                    
+                    ${resource.notes ? `<div class="item-notes">${resource.notes}</div>` : ''}
+                    
+                    <div class="item-actions">
+                        <button class="edit-btn" onclick="editResource('${resource.id}', '${type}')" title="Editar">✏️</button>
+                        <button class="delete-btn" onclick="deleteResource('${resource.id}', '${type}')" title="Eliminar">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCrafting(items, containerId, type) {
+            const container = document.getElementById(containerId);
+            const filteredItems = filterCrafting(items, type);
+
+            if (filteredItems.length === 0) {
+                const typeName = type === 'objects' ? 'objetos' : type === 'vehicles' ? 'vehículos' : 'armas';
+                container.innerHTML = `
+            <div class="empty-state">
+                <h3>No hay ${typeName}</h3>
+                <p>Añade tu primer ${typeName.slice(0, -1)} usando el botón correspondiente</p>
+            </div>
+        `;
+                return;
+            }
+
+            container.innerHTML = filteredItems.map(item => {
+                const craftingStatus = getCraftingStatus(item);
+                const maxCraftable = getMaxCraftable(item);
+
+                const statusHTML = `
+            <span class="crafting-status ${craftingStatus.canCraft ? 'can-craft' : 'missing-materials'}">
+                ${craftingStatus.canCraft ? `Puedo hacer ${maxCraftable}` : 'Faltan materiales'}
+            </span>
+        `;
+
+                return `
+            <div class="item-card crafting-card" data-id="${item.id}">
+                <div class="item-header">
+                    <img src="${item.image || getDefaultImage(type)}" 
+                         alt="${item.name}" class="item-image"
+                         onerror="this.src='${getDefaultImage(type)}'">
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        <div class="item-category">${item.category}</div>
+                    </div>
+                </div>
+                
+                <div class="item-quantity">
+                    <span class="quantity-label">Tengo:</span>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', -1)">-</button>
+                        <span class="quantity-display">${item.quantity || 0}</span>
+                        <button class="quantity-btn" onclick="changeQuantity('${item.id}', '${type}', 1)">+</button>
+                    </div>
+                </div>
+                
+                <div class="recipe-info">
+                    <div class="recipe-title">Materiales necesarios:</div>
+                    <div class="recipe-materials">
+                        ${item.recipe.map(material => {
+                    const available = findMaterialQuantity(material.name);
+                    const sufficient = available >= material.quantity;
+                    return `
+                                <div class="material-item">
+                                    <span class="material-name">${material.name} x${material.quantity}</span>
+                                    <span class="${sufficient ? 'material-available' : 'material-missing'}">
+                                        (${available}/${material.quantity})
+                                    </span>
+                                </div>
+                            `;
+                }).join('')}
+                    </div>
+                </div>
+                
+                <div class="craft-info">
+                    <div>🔧 ${item.tool || 'Manual'}</div>
+                    <div>⏱️ ${item.time}s</div>
+                    <div>📦 Produce ${item.yield}</div>
+                </div>
+                
+                ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
+
+                <div class="item-actions">
+                    ${statusHTML}
+                    <button class="edit-btn" onclick="editCrafting('${item.id}', '${type}')" title="Editar">✏️</button>
+                    <button class="delete-btn" onclick="deleteCrafting('${item.id}', '${type}')" title="Eliminar">🗑️</button>
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
+
+
+        // Imágenes por defecto
+        function getDefaultImage(type) {
+            const images = {
+                resource: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNEE1NTY4Ii8+CjxwYXRoIGQ9Ik0zMCAyMEM0NCAyNyA0NCAzMyAzMCA0MEMxNiAzMyAxNiAyNyAzMCAyMFoiIGZpbGw9IiNGRkE3MjYiLz4KPHN2Zz4K',
+                objects: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNEE1NTY4Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0MFY0MEgyMFYyMFpNMjUgMjVWMzVIMzVWMjVIMjVaIiBmaWxsPSIjRkZBNzI2Ii8+PC9zdmc+',
+                vehicles: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNEE1NTY4Ii8+CjxwYXRoIGQ9Ik0xNSAzNUg0NUwyMCAyNUw0MCAyNVoiIGZpbGw9IiNGRkE3MjYiLz4KPGNpcmNsZSBjeD0iMjUiIGN5PSIzNSIgcj0iNCIgZmlsbD0iI0ZGQTcyNiIvPgo8Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSI0IiBmaWxsPSIjRkZBNzI2Ii8+PC9zdmc+',
+                weapons: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNEE1NTY4Ii8+CjxwYXRoIGQ9Ik0yMCA0MEwyNSAyMEwzNSAyMEw0MCA0MEgzNUgzMEgyNUgyMFoiIGZpbGw9IiNGRkE3MjYiLz4KPHJlY3QgeD0iMjciIHk9IjQwIiB3aWR0aD0iNiIgaGVpZ2h0PSIxMCIgZmlsbD0iI0ZGQTcyNiIvPjwvc3ZnPg=='
+            };
+            return images[type] || images.resource;
+        }
+
+        // Filtros
+        function filterResources(resources, type) {
+            const categoryFilter = document.getElementById(`${type}CategoryFilter`).value;
+            const levelFilter = document.getElementById(`${type}LevelFilter`).value;
+            const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+
+            return resources.filter(resource => {
+                const matchesCategory = !categoryFilter || resource.category === categoryFilter;
+                const matchesLevel = !levelFilter || resource.level.toString() === levelFilter;
+                const matchesSearch = !searchTerm ||
+                    resource.name.toLowerCase().includes(searchTerm) ||
+                    resource.category.toLowerCase().includes(searchTerm) ||
+                    (resource.notes && resource.notes.toLowerCase().includes(searchTerm));
+
+                return matchesCategory && matchesLevel && matchesSearch;
+            });
+        }
+
+        function filterCrafting(items, type) {
+            const categoryEl = document.getElementById(`${type}CategoryFilter`);
+            const statusEl = document.getElementById(`${type}StatusFilter`);
+            const categoryFilter = categoryEl ? categoryEl.value : "";
+            const statusFilter = statusEl ? statusEl.value : "";
+            const searchTerm = document.getElementById('globalSearch').value.toLowerCase();
+
+            return items.filter(item => {
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                const matchesSearch = !searchTerm ||
+                    item.name.toLowerCase().includes(searchTerm) ||
+                    item.category.toLowerCase().includes(searchTerm) ||
+                    (item.notes && item.notes.toLowerCase().includes(searchTerm));
+
+                let matchesStatus = true;
+                if (statusFilter) {
+                    const status = getCraftingStatus(item);
+                    matchesStatus = (statusFilter === 'can-craft' && status.canCraft) ||
+                        (statusFilter === 'missing-materials' && !status.canCraft);
+                }
+
+                return matchesCategory && matchesSearch && matchesStatus;
+            });
+        }
+
+
+        // Búsqueda
+        function handleGlobalSearch() {
+            renderAllTabs();
+        }
+
+        function clearSearch() {
+            document.getElementById('globalSearch').value = '';
+            renderAllTabs();
+        }
+
+        // Gestión de cantidades
+        function changeQuantity(id, type, change) {
+            let item;
+            let collection;
+
+            switch (type) {
+                case 'raw':
+                    collection = rawResources;
+                    break;
+                case 'refined':
+                    collection = refinedResources;
+                    break;
+                case 'objects':
+                    collection = objects;
+                    break;
+                case 'vehicles':
+                    collection = vehicles;
+                    break;
+                case 'weapons':
+                    collection = weapons;
+                    break;
+            }
+
+            item = collection.find(i => i.id === id);
+
+            if (item) {
+                item.quantity = Math.max(0, (item.quantity || 0) + change);
+                saveToStorage();
+                renderTab(type);
+                // Actualizar estado de creación en todas las pestañas que lo necesiten
+                if (['raw', 'refined'].includes(type)) {
+                    renderTab('objects');
+                    renderTab('vehicles');
+                    renderTab('weapons');
+                }
+            }
+        }
+
+        // Modales
+        function openResourceModal(type) {
+            editingType = type;
+            editingItem = null;
+
+            document.getElementById('resourceModalTitle').textContent = 'Añadir Recurso';
+            document.getElementById('resourceForm').reset();
+            document.getElementById('resourceModal').classList.add('show');
+        }
+
+        function openCraftingModal(type) {
+            editingType = type;
+            editingItem = null;
+
+            const titles = {
+                objects: 'Añadir Objeto',
+                vehicles: 'Añadir Vehículo',
+                weapons: 'Añadir Arma'
+            };
+
+            document.getElementById('craftingModalTitle').textContent = titles[type];
+            document.getElementById('craftingForm').reset();
+            document.getElementById('recipeContainer').innerHTML = '';
+
+            // Actualizar opciones de categoría
+            updateCategoryOptions(type);
+
+            document.getElementById('craftingModal').classList.add('show');
+        }
+
+        function updateCategoryOptions(type) {
+            const categorySelect = document.getElementById('craftingCategory');
+            categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+
+            if (categoryOptions[type]) {
+                categoryOptions[type].forEach(category => {
+                    categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+                });
+            }
+        }
+
+        function openCalculatorModal() {
+            populateCalculatorDropdown();
+            document.getElementById('calculatorModal').classList.add('show');
+        }
+
+        function openObjectivesModal() {
+            renderObjectives();
+            document.getElementById('objectivesModal').classList.add('show');
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('show');
+            });
+            editingItem = null;
+            editingType = null;
+        }
+
+        // Edición
+        function editResource(id, type) {
+            const resources = type === 'raw' ? rawResources : refinedResources;
+            const resource = resources.find(r => r.id === id);
+
+            if (resource) {
+                editingItem = resource;
+                editingType = type;
+
+                document.getElementById('resourceModalTitle').textContent = 'Editar Recurso';
+                document.getElementById('resourceName').value = resource.name;
+                document.getElementById('resourceCategory').value = resource.category;
+                document.getElementById('resourceLevel').value = resource.level;
+                document.getElementById('resourceQuantity').value = resource.quantity;
+                document.getElementById('resourceImage').value = resource.image || '';
+                document.getElementById('resourceNotes').value = resource.notes || '';
+
+                document.getElementById('resourceModal').classList.add('show');
+            }
+        }
+
+        function editCrafting(id, type) {
+            let collection;
+            switch (type) {
+                case 'objects':
+                    collection = objects;
+                    break;
+                case 'vehicles':
+                    collection = vehicles;
+                    break;
+                case 'weapons':
+                    collection = weapons;
+                    break;
+            }
+
+            const item = collection.find(i => i.id === id);
+
+            if (item) {
+                editingItem = item;
+                editingType = type;
+
+                const titles = {
+                    objects: 'Editar Objeto',
+                    vehicles: 'Editar Vehículo',
+                    weapons: 'Editar Arma'
+                };
+
+                document.getElementById('craftingModalTitle').textContent = titles[type];
+                updateCategoryOptions(type);
+
+                document.getElementById('craftingName').value = item.name;
+                document.getElementById('craftingCategory').value = item.category;
+                document.getElementById('craftingImage').value = item.image || '';
+                document.getElementById('craftingTool').value = item.tool || '';
+                document.getElementById('craftingTime').value = item.time;
+                document.getElementById('craftingYield').value = item.yield;
+                document.getElementById('craftingNotes').value = item.notes || '';
+
+                // Cargar receta
+                const recipeContainer = document.getElementById('recipeContainer');
+                recipeContainer.innerHTML = '';
+                item.recipe.forEach(material => {
+                    addMaterialToRecipe(material.name, material.quantity);
+                });
+
+                document.getElementById('craftingModal').classList.add('show');
+            }
+        }
+
+        // Eliminación
+        function deleteResource(id, type) {
+            if (confirm('¿Estás seguro de que quieres eliminar este recurso?')) {
+                if (type === 'raw') {
+                    rawResources = rawResources.filter(r => r.id !== id);
+                } else {
+                    refinedResources = refinedResources.filter(r => r.id !== id);
+                }
+                saveToStorage();
+                renderTab(type);
+                renderTab('objects');
+                renderTab('vehicles');
+                renderTab('weapons');
+            }
+        }
+
+        function deleteCrafting(id, type) {
+            const typeNames = {
+                objects: 'objeto',
+                vehicles: 'vehículo',
+                weapons: 'arma'
+            };
+
+            if (confirm(`¿Estás seguro de que quieres eliminar este ${typeNames[type]}?`)) {
+                switch (type) {
+                    case 'objects':
+                        objects = objects.filter(i => i.id !== id);
+                        break;
+                    case 'vehicles':
+                        vehicles = vehicles.filter(i => i.id !== id);
+                        break;
+                    case 'weapons':
+                        weapons = weapons.filter(i => i.id !== id);
+                        break;
+                }
+                saveToStorage();
+                renderTab(type);
+                populateCalculatorDropdown();
+            }
+        }
+
+        // Formularios
+        function handleResourceSubmit(e) {
+            e.preventDefault();
+
+            const type = editingType;
+            const resources = type === 'raw' ? rawResources : refinedResources;
+
+            const formData = {
+                name: document.getElementById('resourceName').value.trim(),
+                category: document.getElementById('resourceCategory').value,
+                level: parseInt(document.getElementById('resourceLevel').value),
+                quantity: parseInt(document.getElementById('resourceQuantity').value),
+                image: document.getElementById('resourceImage').value.trim(),
+                notes: document.getElementById('resourceNotes').value.trim()
+            };
+
+            if (
+                !type || !["raw", "refined"].includes(type) ||
+                !formData.name || formData.name === "undefined" ||
+                !formData.category || formData.category === "undefined" ||
+                isNaN(formData.level) ||
+                isNaN(formData.quantity)
+            ) {
+                alert("Por favor, completa correctamente todos los campos obligatorios.");
+                return;
+            }
+
+            if (!editingItem && resources.some(r => r.name.toLowerCase() === formData.name.toLowerCase())) {
+                alert('Ya existe un recurso con ese nombre.');
+                return;
+            }
+
+            if (editingItem) {
+                Object.assign(editingItem, formData);
+            } else {
+                formData.id = generateId();
+                resources.push(formData);
+            }
+
+            saveToStorage();
+            renderTab(editingType);
+            renderTab('objects');
+            renderTab('vehicles');
+            renderTab('weapons');
+            closeAllModals();
+        }
+
+
+        function handleCraftingSubmit(e) {
+            e.preventDefault();
+
+            const recipe = [];
+            document.querySelectorAll('.recipe-item').forEach(item => {
+                const materialSelect = item.querySelector('select');
+                const quantityInput = item.querySelector('input');
+
+                if (materialSelect.value && quantityInput.value > 0) {
+                    recipe.push({
+                        name: materialSelect.value,
+                        quantity: parseInt(quantityInput.value)
+                    });
+                }
+            });
+
+            const formData = {
+                name: document.getElementById('craftingName').value.trim(),
+                category: document.getElementById('craftingCategory').value,
+                image: document.getElementById('craftingImage').value.trim(),
+                tool: document.getElementById('craftingTool').value,
+                time: parseInt(document.getElementById('craftingTime').value),
+                yield: parseInt(document.getElementById('craftingYield').value),
+                recipe: recipe,
+                notes: document.getElementById('craftingNotes').value.trim()
+            };
+
+            // Validación
+            if (!formData.name || !formData.category) {
+                alert('Por favor, completa todos los campos obligatorios.');
+                return;
+            }
+
+            if (recipe.length === 0) {
+                alert('Debes añadir al menos un material a la receta.');
+                return;
+            }
+
+            let collection;
+            switch (editingType) {
+                case 'objects':
+                    collection = objects;
+                    break;
+                case 'vehicles':
+                    collection = vehicles;
+                    break;
+                case 'weapons':
+                    collection = weapons;
+                    break;
+            }
+
+            // Verificar duplicados
+            if (!editingItem && collection.some(i => i.name.toLowerCase() === formData.name.toLowerCase())) {
+                alert('Ya existe un elemento con ese nombre.');
+                return;
+            }
+
+            if (editingItem) {
+                // Editar
+                Object.assign(editingItem, formData);
+                if (editingItem.quantity === undefined) {
+                    editingItem.quantity = 0;
+                }
+            } else {
+                // Crear nuevo
+                formData.id = generateId();
+                formData.quantity = 0;
+                collection.push(formData);
+            }
+
+            saveToStorage();
+            renderTab(editingType);
+            populateCalculatorDropdown();
+            closeAllModals();
+        }
+
+        // Gestión de recetas
+        function addMaterialToRecipe(materialName = '', quantity = 1) {
+            const recipeContainer = document.getElementById('recipeContainer');
+            const allMaterials = [...rawResources, ...refinedResources, ...objects];
+
+
+            const recipeItem = document.createElement('div');
+            recipeItem.className = 'recipe-item';
+            recipeItem.innerHTML = `
+                <select required>
+                    <option value="">Seleccionar material</option>
+                    ${allMaterials.map(material =>
+                `<option value="${material.name}" ${material.name === materialName ? 'selected' : ''}>${material.name}</option>`
+            ).join('')}
+                </select>
+                <input type="number" min="1" value="${quantity}" placeholder="Cantidad" required>
+                <button type="button" class="remove-material" onclick="this.parentElement.remove()">Eliminar</button>
+            `;
+
+            recipeContainer.appendChild(recipeItem);
+        }
+
+        // Lógica de creación
+        function getCraftingStatus(item) {
+            if (!item?.recipe || !Array.isArray(item.recipe)) {
+                return {
+                    canCraft: false,
+                    materials: []
+                };
+            }
+
+            const materialsStatus = item.recipe.map(material => {
+                const available = findMaterialQuantity(material.name);
+                return {
+                    name: material.name,
+                    needed: material.quantity,
+                    available: available,
+                    sufficient: available >= material.quantity
+                };
+            });
+
+            const canCraft = materialsStatus.every(m => m.sufficient);
+
+            return {
+                canCraft,
+                materials: materialsStatus
+            };
+        }
+
+
+        function getMaxCraftable(item) {
+            if (!item?.recipe || !Array.isArray(item.recipe)) {
+                return 0;
+            }
+
+            let maxCraftable = Infinity;
+
+            item.recipe.forEach(material => {
+                const available = findMaterialQuantity(material.name);
+                const possibleFromThis = Math.floor(available / material.quantity);
+                maxCraftable = Math.min(maxCraftable, possibleFromThis);
+            });
+
+            return maxCraftable === Infinity ? 0 : maxCraftable * (item.yield || 1);
+        }
+
+
+        function findMaterialQuantity(materialName) {
+            const rawMaterial = rawResources.find(r => r.name === materialName);
+            if (rawMaterial) return rawMaterial.quantity;
+
+            const refinedMaterial = refinedResources.find(r => r.name === materialName);
+            if (refinedMaterial) return refinedMaterial.quantity;
+
+            const objectMaterial = objects.find(r => r.name === materialName);
+            if (objectMaterial) return objectMaterial.quantity;
+
+            return 0;
+        }
+
+
+        // Calculadora
+        function populateCalculatorDropdown() {
+            const dropdown = document.getElementById('calcItem');
+            dropdown.innerHTML = '<option value="">Seleccionar objeto</option>';
+
+            const allCraftable = [...objects, ...vehicles, ...weapons];
+            allCraftable.forEach(item => {
+                let typeLabel = '';
+                if (objects.includes(item)) typeLabel = ' (Objeto)';
+                else if (vehicles.includes(item)) typeLabel = ' (Vehículo)';
+                else if (weapons.includes(item)) typeLabel = ' (Arma)';
+
+                dropdown.innerHTML += `<option value="${item.id}" data-type="${getItemType(item)}">${item.name}${typeLabel}</option>`;
+            });
+        }
+
+        function getItemType(item) {
+            if (objects.includes(item)) return 'objects';
+            if (vehicles.includes(item)) return 'vehicles';
+            if (weapons.includes(item)) return 'weapons';
+            return 'unknown';
+        }
+
+        function performCalculation() {
+            const itemId = document.getElementById('calcItem').value;
+            const quantity = parseInt(document.getElementById('calcQuantity').value);
+
+            if (!itemId || !quantity) {
+                alert('Por favor, selecciona un objeto y cantidad.');
+                return;
+            }
+
+            const allItems = [...objects, ...vehicles, ...weapons];
+            const item = allItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const craftingBatches = Math.ceil(quantity / item.yield);
+            const materialsNeeded = {};
+
+            item.recipe.forEach(material => {
+                materialsNeeded[material.name] = material.quantity * craftingBatches;
+            });
+
+            const resultsContainer = document.getElementById('calculatorResults');
+            resultsContainer.innerHTML = `
+                <h4>Para hacer ${quantity} ${item.name} necesitas:</h4>
+                <div class="materials-needed">
+                    ${Object.entries(materialsNeeded).map(([name, needed]) => {
+                const available = findMaterialQuantity(name);
+                const sufficient = available >= needed;
+                return `
+                            <div class="needed-item ${sufficient ? 'needed-sufficient' : 'needed-insufficient'}">
+                                <span>${name}</span>
+                                <span style="color: ${sufficient ? '#48bb78' : '#f56565'}">
+                                    ${needed} necesarios (tienes ${available})
+                                </span>
+                            </div>
+                        `;
+            }).join('')}
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #4a5568; color: #a0aec0;">
+                    Necesitarás hacer ${craftingBatches} lotes de creación
+                </div>
+            `;
+        }
+
+        // Objetivos
+        function addObjective() {
+            const input = document.getElementById('newObjective');
+            const text = input.value.trim();
+
+            if (text) {
+                const objective = {
+                    id: generateId(),
+                    text: text,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                objectives.push(objective);
+                saveToStorage();
+                renderObjectives();
+                input.value = '';
+            }
+        }
+
+        function renderObjectives() {
+            const container = document.getElementById('objectivesList');
+
+            if (objectives.length === 0) {
+                container.innerHTML = '<div class="empty-state">No tienes objetivos. ¡Añade tu primer objetivo!</div>';
+                return;
+            }
+
+            container.innerHTML = objectives.map(objective => `
+                <div class="objective-item ${objective.completed ? 'completed' : ''}">
+                    <div class="objective-text">${objective.text}</div>
+                    <div class="objective-actions">
+                        ${!objective.completed ? `<button class="complete-btn" onclick="completeObjective('${objective.id}')">Completar</button>` : ''}
+                        <button class="delete-btn" onclick="deleteObjective('${objective.id}')" title="Eliminar">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function completeObjective(id) {
+            const objective = objectives.find(o => o.id === id);
+            if (objective) {
+                objective.completed = true;
+                objective.completedAt = new Date().toISOString();
+                saveToStorage();
+                renderObjectives();
+            }
+        }
+
+        function deleteObjective(id) {
+            if (confirm('¿Eliminar este objetivo?')) {
+                objectives = objectives.filter(o => o.id !== id);
+                saveToStorage();
+                renderObjectives();
+            }
+        }
+
+        // Exportar/Importar
+        function exportData() {
+            const data = {
+                rawResources,
+                refinedResources,
+                objects,
+                vehicles,
+                weapons,
+                objectives,
+                exportDate: new Date().toISOString(),
+                version: '2.0'
+            };
+
+            // Crear archivo CSV
+            const csvContent = generateCSV(data);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `dune-inventory-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // También exportar JSON
+            const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const jsonLink = document.createElement('a');
+            const jsonUrl = URL.createObjectURL(jsonBlob);
+            jsonLink.setAttribute('href', jsonUrl);
+            jsonLink.setAttribute('download', `dune-inventory-${new Date().toISOString().split('T')[0]}.json`);
+            jsonLink.style.visibility = 'hidden';
+            document.body.appendChild(jsonLink);
+            jsonLink.click();
+            document.body.removeChild(jsonLink);
+        }
+
+        function generateCSV(data) {
+            let csv = 'DUNE AWAKENING - INVENTARIO\n\n';
+
+            // Recursos Raw
+            csv += 'RECURSOS EN BRUTO\n';
+            csv += 'Nombre,Categoría,Nivel,Cantidad,Notas\n';
+            data.rawResources.forEach(resource => {
+                csv += `"${resource.name}","${resource.category}",${resource.level},${resource.quantity},"${resource.notes || ''}"\n`;
+            });
+
+            csv += '\nRECURSOS REFINADOS\n';
+            csv += 'Nombre,Categoría,Nivel,Cantidad,Notas\n';
+            data.refinedResources.forEach(resource => {
+                csv += `"${resource.name}","${resource.category}",${resource.level},${resource.quantity},"${resource.notes || ''}"\n`;
+            });
+
+            csv += '\nOBJETOS\n';
+            csv += 'Nombre,Categoría,Herramienta,Tiempo,Produce,Materiales,Notas\n';
+            data.objects.forEach(item => {
+                const materials = item.recipe.map(m => `${m.name} x${m.quantity}`).join('; ');
+                csv += `"${item.name}","${item.category}","${item.tool || ''}",${item.time},${item.yield},"${materials}","${item.notes || ''}"\n`;
+            });
+
+            csv += '\nVEHÍCULOS\n';
+            csv += 'Nombre,Categoría,Herramienta,Tiempo,Produce,Materiales,Notas\n';
+            data.vehicles.forEach(item => {
+                const materials = item.recipe.map(m => `${m.name} x${m.quantity}`).join('; ');
+                csv += `"${item.name}","${item.category}","${item.tool || ''}",${item.time},${item.yield},"${materials}","${item.notes || ''}"\n`;
+            });
+
+            csv += '\nARMAS\n';
+            csv += 'Nombre,Categoría,Herramienta,Tiempo,Produce,Materiales,Notas\n';
+            data.weapons.forEach(item => {
+                const materials = item.recipe.map(m => `${m.name} x${m.quantity}`).join('; ');
+                csv += `"${item.name}","${item.category}","${item.tool || ''}",${item.time},${item.yield},"${materials}","${item.notes || ''}"\n`;
+            });
+
+            csv += '\nOBJETIVOS\n';
+            csv += 'Objetivo,Estado,Fecha Creación,Fecha Completado\n';
+            data.objectives.forEach(objective => {
+                csv += `"${objective.text}","${objective.completed ? 'Completado' : 'Pendiente'}","${objective.createdAt}","${objective.completedAt || ''}"\n`;
+            });
+
+            return csv;
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (confirm('¿Importar datos? Esto sobrescribirá todos los datos actuales.')) {
+                        rawResources = data.rawResources || [];
+                        refinedResources = data.refinedResources || [];
+                        objects = data.objects || [];
+                        vehicles = data.vehicles || [];
+                        weapons = data.weapons || [];
+                        objectives = data.objectives || [];
+
+                        // Migrar datos antiguos si es necesario
+                        if (data.craftingItems && data.craftingItems.length > 0) {
+                            migrateOldCraftingData(data.craftingItems);
+                        }
+
+                        // Asegurar que objetos tengan quantity
+                        [objects, vehicles, weapons].forEach(collection => {
+                            collection.forEach(item => {
+                                if (item.quantity === undefined) {
+                                    item.quantity = 0;
+                                }
+                            });
+                        });
+
+                        saveToStorage();
+                        renderAllTabs();
+                        populateCalculatorDropdown();
+                        renderObjectives();
+
+                        alert('Datos importados correctamente.');
+                    }
+                } catch (error) {
+                    alert('Error al importar el archivo. Asegúrate de que sea un archivo JSON válido.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Utilidades
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function renderAguaTab() {
+            document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+            document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
+        }
+
+
+        // Cargar litros en cisternas desde localStorage
+        document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+
+
+
+        // Funciones globales para onclick
+        window.changeQuantity = changeQuantity;
+        window.editResource = editResource;
+        window.editCrafting = editCrafting;
+        window.deleteResource = deleteResource;
+        window.deleteCrafting = deleteCrafting;
+        window.completeObjective = completeObjective;
+        window.deleteObjective = deleteObjective;
+    </script>
+
+
+
+
+
+
+    <!-- Firebase v10.12 compatibilidad con sintaxis tradicional -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
+            authDomain: "dune-inventario.firebaseapp.com",
+            projectId: "dune-inventario",
+            storageBucket: "dune-inventario.firebasestorage.app",
+            messagingSenderId: "26414027507",
+            appId: "1:26414027507:web:b8970fb32a837d7117dd86"
+        };
+
+
+        // Inicializar Firebase en modo compatibilidad
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
+
+
+    <script>
+        async function guardarDatosEnFirestore(userId) {
+            const datos = {
+                rawResources,
+                refinedResources,
+                objects,
+                vehicles,
+                weapons,
+                objectives,
+                aguaLinterjones: parseInt(localStorage.getItem('aguaLinterjones')) || 0,
+                aguaLitros: parseInt(localStorage.getItem('aguaLitros')) || 0,
+                solaris: parseInt(localStorage.getItem('solaris')) || 0
+            };
+
+            try {
+                await db.collection("users").doc(userId).set(datos);
+                console.log("✅ Datos guardados en Firestore");
+            } catch (error) {
+                console.error("❌ Error al guardar en Firestore:", error);
+            }
+        }
+
+        async function cargarDatosDesdeFirestore(userId) {
+            try {
+                const doc = await db.collection("users").doc(userId).get();
+                if (doc.exists) {
+                    const datos = doc.data();
+                    rawResources = datos.rawResources || [];
+                    refinedResources = datos.refinedResources || [];
+                    objects = datos.objects || [];
+                    vehicles = datos.vehicles || [];
+                    weapons = datos.weapons || [];
+                    objectives = datos.objectives || [];
+
+                    localStorage.setItem('aguaLinterjones', datos.aguaLinterjones || 0);
+                    localStorage.setItem('aguaLitros', datos.aguaLitros || 0);
+                    localStorage.setItem('solaris', datos.solaris || 0);
+
+                    saveToStorage(); // Guarda en localStorage
+
+                    // 🔄 Refrescar visualmente el dashboard y pestañas
+                    renderDashboard?.();
+                    renderRawResources?.();
+                    renderRefinedResources?.();
+                    renderObjects?.();
+                    renderVehicles?.();
+                    renderWeapons?.();
+                    renderObjectives?.();
+
+                    console.log("✅ Datos cargados desde Firestore y vistas actualizadas");
+                } else {
+                    console.log("ℹ️ No hay datos aún en Firestore para este usuario.");
+                }
+            } catch (error) {
+                console.error("❌ Error al cargar desde Firestore:", error);
+            }
+        }
+
+    </script>
+
+
+
+
+    <script>
+        const loginBtn = document.getElementById("loginBtn");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const userNameSpan = document.getElementById("userName");
+
+        // Iniciar sesión con Google
+        loginBtn.addEventListener("click", () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(console.error);
+        });
+
+        // Cerrar sesión
+        logoutBtn.addEventListener("click", () => {
+            auth.signOut().catch(console.error);
+        });
+
+        // Detectar cambios en la sesión
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loginBtn.style.display = "none";
+                logoutBtn.style.display = "inline-block";
+                userNameSpan.textContent = `👤 ${user.displayName}`;
+
+                // Cargar datos del usuario desde Firestore
+                cargarDatosDesdeFirestore(user.uid);
+                recuperarDatosImpuestos();
+
+
+                // Guardar cada 30 segundos automáticamente
+                setInterval(() => guardarDatosEnFirestore(user.uid), 30000);
+            } else {
+                loginBtn.style.display = "inline-block";
+                logoutBtn.style.display = "none";
+                userNameSpan.textContent = "";
+            }
+        });
+
+        let impuestosIntervalo = null;
+
+document.getElementById('addImpuestoBtn').addEventListener('click', () => {
+  document.getElementById('impuestosFormContainer').style.display = 'block';
+});
+
+document.getElementById('guardarImpuestosBtn').addEventListener('click', async () => {
+  const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+  const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+
+  const ahora = new Date();
+  const vencimiento = new Date(ahora.getTime() + (dias * 24 + horas) * 60 * 60 * 1000);
+
+  const user = firebase.auth().currentUser;
+if (!user) {
+  alert("Debes iniciar sesión antes de guardar los datos.");
+  return;
+}
+const userId = user.uid;
+
+  await firebase.firestore().collection("usuarios").doc(userId).set({
+    impuestosVencimiento: vencimiento.toISOString()
+  }, { merge: true });
+
+  document.getElementById('impuestosFormContainer').style.display = 'none';
+  cargarCuentaRegresivaImpuestos(vencimiento);
+});
+
+function cargarCuentaRegresivaImpuestos(fechaFin) {
+  clearInterval(impuestosIntervalo);
+  document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
+  document.getElementById('impuestosDashboardCard').style.display = 'block';
+
+  function actualizar() {
+    const ahora = new Date();
+    const fin = new Date(fechaFin);
+    const diferencia = fin - ahora;
+
+    if (diferencia <= 0) {
+      document.getElementById('impuestosCountdownTexto').textContent = "⚠️ ¡Impuestos vencidos!";
+      document.getElementById('impuestosCountdownDashboard').textContent = "⚠️ ¡Impuestos vencidos!";
+      clearInterval(impuestosIntervalo);
+      return;
+    }
+
+    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+    const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+
+    const texto = `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos para pagar los impuestos.`;
+    document.getElementById('impuestosCountdownTexto').textContent = texto;
+    document.getElementById('impuestosCountdownDashboard').textContent = texto;
+  }
+
+  actualizar();
+  impuestosIntervalo = setInterval(actualizar, 1000);
+}
+
+async function recuperarDatosImpuestos() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const doc = await firebase.firestore().collection("usuarios").doc(user.uid).get();
+  if (doc.exists && doc.data().impuestosVencimiento) {
+    cargarCuentaRegresivaImpuestos(doc.data().impuestosVencimiento);
+  }
+}
+
+    </script>
+
+    <script>
+
+        const saveBtn = document.getElementById("saveBtn");
+
+        saveBtn.addEventListener("click", () => {
+            const user = auth.currentUser;
+            if (user) {
+                guardarDatosEnFirestore(user.uid);
+            } else {
+                alert("Debes iniciar sesión para guardar tus datos.");
+            }
+        });
+
+    </script>
+
+
+
+
+
+</body>
+
+</html>
