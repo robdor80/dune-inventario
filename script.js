@@ -1698,4 +1698,53 @@
             }
         });
 
+        let tiempoEnergiaRestante = null;
+let intervaloEnergia = null;
+const energiaCountdownTexto = document.getElementById("energiaCountdownTexto");
+const guardarEnergiaBtn = document.getElementById("guardarEnergiaBtn");
+
+guardarEnergiaBtn.addEventListener("click", () => {
+  const dias = parseInt(document.getElementById("diasEnergiaInput").value) || 0;
+  const horas = parseInt(document.getElementById("horasEnergiaInput").value) || 0;
+
+  const ahora = new Date();
+  ahora.setHours(ahora.getHours() + horas + dias * 24);
+  tiempoEnergiaRestante = ahora;
+
+  if (user) {
+    guardarDatosFirestore(`usuarios/${user.uid}/energia`, {
+      tiempoEnergiaRestante: ahora.toISOString()
+    });
+  }
+
+  iniciarCuentaRegresivaEnergia();
+  document.querySelector(".energia-formulario").style.display = "none";
+});
+
+function iniciarCuentaRegresivaEnergia() {
+  if (!tiempoEnergiaRestante) return;
+
+  clearInterval(intervaloEnergia);
+
+  intervaloEnergia = setInterval(() => {
+    const ahora = new Date();
+    const diferencia = new Date(tiempoEnergiaRestante) - ahora;
+
+    if (diferencia <= 0) {
+      clearInterval(intervaloEnergia);
+      energiaCountdownTexto.textContent = "⛔ Energía agotada";
+      return;
+    }
+
+    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    const horas = Math.floor((diferencia / (1000 * 60 * 60)) % 24);
+    const minutos = Math.floor((diferencia / (1000 * 60)) % 60);
+    const segundos = Math.floor((diferencia / 1000) % 60);
+
+    energiaCountdownTexto.textContent =
+      `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos de energía`;
+  }, 1000);
+}
+
+
     
