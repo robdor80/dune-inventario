@@ -258,23 +258,27 @@
 
         // Agua
         function guardarAgua() {
-            const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
-            const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+    const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
+    const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
 
-            localStorage.setItem('aguaLitros', litros);
-            localStorage.setItem('aguaLinterjones', linterjones);
+    localStorage.setItem('aguaLitros', litros);
+    localStorage.setItem('aguaLinterjones', linterjones);
 
-            alert("Datos de agua guardados.");
-        }
+    renderDashboard(); // <-- Añadir esto
+    alert("Datos de agua guardados.");
+}
+
 
 
 
         // Solaris
         function guardarSolaris() {
-            const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
-            localStorage.setItem('solaris', cantidad);
-            alert("Cantidad de Solaris guardada.");
-        }
+    const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
+    localStorage.setItem('solaris', cantidad);
+
+    renderDashboard(); // <-- Añadir esto
+    alert("Cantidad de Solaris guardada.");
+}
 
         // Al cargar, restaurar valores
         document.addEventListener('DOMContentLoaded', () => {
