@@ -320,7 +320,15 @@
             renderCategoryStats();
             renderTopResources();
             renderInventoryStatus();
-        }
+
+            // Mostrar agua
+    document.getElementById('dashboardAguaLitros').textContent = localStorage.getItem('aguaLitros') || 0;
+    document.getElementById('dashboardAguaLinterjones').textContent = localStorage.getItem('aguaLinterjones') || 0;
+
+    // Mostrar solaris
+    document.getElementById('dashboardSolaris').textContent = localStorage.getItem('solaris') || 0;
+}
+        
 
         function renderLowResources() {
             const container = document.getElementById('lowResourcesContent');

@@ -98,95 +98,52 @@
             </div>
 
             <div class="dashboard-grid">
-                <!-- Impuestos -->
-                <div class="dashboard-card" id="impuestosDashboardCard" style="display: none;">
-                    <div class="card-header">
-                        <h3>⏳ Impuestos</h3>
-                        <span class="card-subtitle">Cuenta regresiva</span>
-                    </div>
-                    <div class="card-content">
-                        <p id="impuestosCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
-                    </div>
-                </div>
+    <!-- Impuestos -->
+    <div class="dashboard-card" id="impuestosDashboardCard" style="display: none;">
+        <div class="card-header">
+            <h3>⏳ Impuestos</h3>
+            <span class="card-subtitle">Cuenta regresiva</span>
+        </div>
+        <div class="card-content">
+            <p id="impuestosCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
+        </div>
+    </div>
 
-                <!-- Energía -->
-                <div class="dashboard-card" id="energiaDashboardCard" style="display: none;">
-                    <div class="card-header">
-                        <h3>🔋 Energía</h3>
-                        <span class="card-subtitle">Cuenta regresiva</span>
-                    </div>
-                    <div class="card-content">
-                        <p id="energiaCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
-                    </div>
-                </div>
+    <!-- Energía -->
+    <div class="dashboard-card" id="energiaDashboardCard" style="display: none;">
+        <div class="card-header">
+            <h3>🔋 Energía</h3>
+            <span class="card-subtitle">Cuenta regresiva</span>
+        </div>
+        <div class="card-content">
+            <p id="energiaCountdownDashboard" style="font-size: 1.2rem; color: #ffa726;"></p>
+        </div>
+    </div>
 
+    <!-- Agua -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h3>💧 Agua</h3>
+            <span class="card-subtitle">Estado actual</span>
+        </div>
+        <div class="card-content">
+            <p style="margin-bottom: 0.5rem;">Litros en cisterna: <span id="dashboardAguaLitros">0</span></p>
+            <p>Linterjones: <span id="dashboardAguaLinterjones">0</span></p>
+        </div>
+    </div>
 
-                <!-- Recursos Escasos -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>⚠️ Recursos Escasos</h3>
-                        <span class="card-subtitle">Cantidad < 10</span>
-                    </div>
-                    <div class="card-content" id="lowResourcesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
+    <!-- Solaris -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h3>💰 Solaris</h3>
+            <span class="card-subtitle">Total actual</span>
+        </div>
+        <div class="card-content">
+            <p>Cantidad: <span id="dashboardSolaris">0</span></p>
+        </div>
+    </div>
+</div>
 
-                <!-- Items Creables -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🔧 Puedes Crear</h3>
-                        <span class="card-subtitle">Materiales disponibles</span>
-                    </div>
-                    <div class="card-content" id="craftableItemsContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Objetivos Pendientes -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🎯 Objetivos Pendientes</h3>
-                        <span class="card-subtitle">Por completar</span>
-                    </div>
-                    <div class="card-content" id="pendingObjectivesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Estadísticas por Categoría -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>📈 Por Categorías</h3>
-                        <span class="card-subtitle">Distribución de recursos</span>
-                    </div>
-                    <div class="card-content" id="categoryStatsContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Top 5 Recursos -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🥇 Top 5 Recursos</h3>
-                        <span class="card-subtitle">Más abundantes</span>
-                    </div>
-                    <div class="card-content" id="topResourcesContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-
-                <!-- Estado del Inventario -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>⏰ Estado del Inventario</h3>
-                        <span class="card-subtitle">Resumen general</span>
-                    </div>
-                    <div class="card-content" id="inventoryStatusContent">
-                        <!-- Se llena dinámicamente -->
-                    </div>
-                </div>
-            </div>
         </section>
 
         <!-- Pestaña Agua -->
