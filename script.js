@@ -1746,5 +1746,81 @@ function iniciarCuentaRegresivaEnergia() {
   }, 1000);
 }
 
+// Cuenta regresiva global
+let energiaInterval = null;
+let impuestosInterval = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Relojes al cargar
+    if (localStorage.getItem('energiaVencimiento')) iniciarCuentaRegresiva('energia');
+    if (localStorage.getItem('impuestosVencimiento')) iniciarCuentaRegresiva('impuestos');
+
+    // Botones de formulario Energía
+    document.getElementById('addEnergiaBtn').addEventListener('click', () => {
+        document.getElementById('energiaFormContainer').style.display = 'block';
+    });
+
+    document.getElementById('guardarEnergiaBtn').addEventListener('click', () => {
+        const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+        const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+        const now = new Date();
+        const vencimiento = new Date(now.getTime() + ((dias * 24 + horas) * 60 * 60 * 1000));
+        localStorage.setItem('energiaVencimiento', vencimiento.toISOString());
+        document.getElementById('energiaFormContainer').style.display = 'none';
+        document.getElementById('energiaCuentaRegresiva').style.display = 'block';
+        document.getElementById('energiaDashboardCard').style.display = 'block';
+        iniciarCuentaRegresiva('energia');
+    });
+
+    // Botones de formulario Impuestos
+    document.getElementById('addImpuestoBtn').addEventListener('click', () => {
+        document.getElementById('impuestosFormContainer').style.display = 'block';
+    });
+
+    document.getElementById('guardarImpuestosBtn').addEventListener('click', () => {
+        const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+        const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+        const now = new Date();
+        const vencimiento = new Date(now.getTime() + ((dias * 24 + horas) * 60 * 60 * 1000));
+        localStorage.setItem('impuestosVencimiento', vencimiento.toISOString());
+        document.getElementById('impuestosFormContainer').style.display = 'none';
+        document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
+        document.getElementById('impuestosDashboardCard').style.display = 'block';
+        iniciarCuentaRegresiva('impuestos');
+    });
+});
+
+function iniciarCuentaRegresiva(tipo) {
+    const vencimiento = new Date(localStorage.getItem(`${tipo}Vencimiento`));
+    const destinoElemento = document.getElementById(`${tipo}CountdownTexto`);
+    const dashboardElemento = document.getElementById(`${tipo}CountdownDashboard`);
+    const intervaloRef = tipo === 'energia' ? 'energiaInterval' : 'impuestosInterval';
+
+    if (window[intervaloRef]) clearInterval(window[intervaloRef]);
+
+    window[intervaloRef] = setInterval(() => {
+        const ahora = new Date();
+        const diferencia = vencimiento - ahora;
+
+        if (diferencia <= 0) {
+            clearInterval(window[intervaloRef]);
+            destinoElemento.textContent = '⛔ Tiempo agotado';
+            dashboardElemento.textContent = '⛔';
+            return;
+        }
+
+        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((diferencia / (1000 * 60 * 60)) % 24);
+        const minutos = Math.floor((diferencia / (1000 * 60)) % 60);
+        const segundos = Math.floor((diferencia / 1000) % 60);
+
+        const texto = `Restan ${dias} días, ${horas} horas, ${minutos} minutos y ${segundos} segundos`;
+
+        destinoElemento.textContent = texto;
+        dashboardElemento.textContent = texto;
+    }, 1000);
+}
+
+
 
     
