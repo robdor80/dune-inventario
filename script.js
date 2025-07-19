@@ -1,253 +1,219 @@
 // Variables globales
-let rawResources = [];
-let refinedResources = [];
-let objects = [];
-let vehicles = [];
-let weapons = [];
 let objectives = [];
-let editingItem = null;
-let editingType = null;
 let changeCount = 0;
 
-const categoryOptions = {
-    objects: ['Herramientas', 'Consumibles', 'Estructuras', 'Componentes', 'Vehiculares', 'Otros'],
-    vehicles: ['Ornitópteros', 'Moto de arena', 'Naves', 'Módulos', 'Otros'],
-    weapons: ['Hoja corta', 'Hoja larga', 'Rifles', 'Pistolas', 'Explosivos', 'Láseres', 'Armas pesadas', 'Otros']
-};
-
-let currentUser = null;
-let db;
-let user;
-
 // Inicialización
-document.addEventListener('DOMContentLoaded', function () {
-    initializeApp();
-    renderAguaTab();
-    document.getElementById('guardarAguaBtn').addEventListener('click', guardarAguaYFirebase);
-    document.getElementById('guardarSolarisBtn').addEventListener('click', guardarSolarisYFirebase);
+window.addEventListener('DOMContentLoaded', () => {
+  initializeApp();
+  restoreInputs();
 });
-
-// === FUNCIONES NUEVAS PARA AGUA Y SOLARIS ===
-async function guardarAguaYFirebase() {
-    const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
-    const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
-
-    localStorage.setItem('aguaLinterjones', linterjones);
-    localStorage.setItem('aguaLitros', litros);
-
-    if (user) {
-        const userDocRef = doc(db, "usuarios", user.uid);
-        await setDoc(userDocRef, {
-            aguaLinterjones: linterjones,
-            aguaLitros: litros
-        }, { merge: true });
-    }
-
-    renderDashboard();
-}
-
-async function guardarSolarisYFirebase() {
-    const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
-    localStorage.setItem('solaris', cantidad);
-
-    if (user) {
-        const userDocRef = doc(db, "usuarios", user.uid);
-        await setDoc(userDocRef, {
-            solaris: cantidad
-        }, { merge: true });
-    }
-
-    renderDashboard();
-}
-
-async function cargarDatosDesdeFirebase(user) {
-    const docRef = doc(db, "usuarios", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-        const data = docSnap.data();
-
-        if (data.aguaLinterjones !== undefined) {
-            document.getElementById('aguaLinterjones').value = data.aguaLinterjones;
-            localStorage.setItem('aguaLinterjones', data.aguaLinterjones);
-        }
-
-        if (data.aguaLitros !== undefined) {
-            document.getElementById('aguaLitros').value = data.aguaLitros;
-            localStorage.setItem('aguaLitros', data.aguaLitros);
-        }
-
-        if (data.solaris !== undefined) {
-            document.getElementById('solarisCantidad').value = data.solaris;
-            localStorage.setItem('solaris', data.solaris);
-        }
-
-        renderDashboard();
-    }
-}
 
 function initializeApp() {
-    const tabs = document.querySelectorAll('.tabs li');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const selectedTab = tab.getAttribute('data-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === selectedTab) {
-                    content.classList.add('active');
-                }
-            });
-        });
-    });
-
-    renderDashboard();
+  loadDataFromStorage();
+  setupEventListeners();
+  renderDashboard();
 }
 
-// DASHBOARD
+// Almacenamiento
+function loadDataFromStorage() {
+  try {
+    objectives = JSON.parse(localStorage.getItem('duneObjectives')) || [];
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+    objectives = [];
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem('duneObjectives', JSON.stringify(objectives));
+    changeCount++;
+    if (changeCount >= 5) {
+      createBackup();
+      changeCount = 0;
+    }
+  } catch (error) {
+    alert('Error al guardar en localStorage');
+  }
+}
+
+function createBackup() {
+  const backup = {
+    objectives,
+    aguaLitros: localStorage.getItem('aguaLitros'),
+    aguaLinterjones: localStorage.getItem('aguaLinterjones'),
+    solaris: localStorage.getItem('solaris'),
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem('duneBackup', JSON.stringify(backup));
+}
+
+// Eventos
+function setupEventListeners() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  document.getElementById('guardarImpuestosBtn').addEventListener('click', guardarImpuestos);
+  document.getElementById('addImpuestoBtn').addEventListener('click', () => {
+    document.getElementById('impuestosFormContainer').style.display = 'block';
+  });
+
+  document.getElementById('guardarEnergiaBtn').addEventListener('click', guardarEnergia);
+  document.getElementById('addEnergiaBtn').addEventListener('click', () => {
+    document.getElementById('energiaFormContainer').style.display = 'block';
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', importData);
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    saveToStorage();
+    alert('Datos guardados');
+  });
+
+  document.getElementById('objectivesBtn').addEventListener('click', () => alert('Gestión de objetivos no implementada.'));
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+  document.querySelectorAll('.tab-content').forEach(section => section.classList.remove('active'));
+  document.getElementById(`${tabName}-tab`).classList.add('active');
+
+  if (tabName === 'dashboard') renderDashboard();
+}
+
+// Agua
+function guardarAgua() {
+  const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
+  const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+  localStorage.setItem('aguaLitros', litros);
+  localStorage.setItem('aguaLinterjones', linterjones);
+  renderDashboard();
+  alert('Datos de agua guardados.');
+}
+
+// Solaris
+function guardarSolaris() {
+  const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
+  localStorage.setItem('solaris', cantidad);
+  renderDashboard();
+  alert('Cantidad de Solaris guardada.');
+}
+
+// Impuestos
+function guardarImpuestos() {
+  const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
+  const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
+  const totalMs = (dias * 24 + horas) * 60 * 60 * 1000;
+  const vencimiento = Date.now() + totalMs;
+  localStorage.setItem('impuestosVencimiento', vencimiento);
+  iniciarCuentaRegresiva('impuestos');
+  renderDashboard();
+  document.getElementById('impuestosFormContainer').style.display = 'none';
+  document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
+}
+
+// Energía
+function guardarEnergia() {
+  const dias = parseInt(document.getElementById('energiaDias').value) || 0;
+  const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
+  const totalMs = (dias * 24 + horas) * 60 * 60 * 1000;
+  const vencimiento = Date.now() + totalMs;
+  localStorage.setItem('energiaVencimiento', vencimiento);
+  iniciarCuentaRegresiva('energia');
+  renderDashboard();
+  document.getElementById('energiaFormContainer').style.display = 'none';
+  document.getElementById('energiaCuentaRegresiva').style.display = 'block';
+}
+
+function iniciarCuentaRegresiva(tipo) {
+  const idTexto = `${tipo}CountdownTexto`;
+  const idDashboard = `${tipo}CountdownDashboard`;
+  const vencimiento = parseInt(localStorage.getItem(`${tipo}Vencimiento`));
+
+  if (!vencimiento) return;
+
+  const updateCountdown = () => {
+    const ahora = Date.now();
+    const diff = vencimiento - ahora;
+    if (diff <= 0) {
+      document.getElementById(idTexto).textContent = '¡Tiempo agotado!';
+      document.getElementById(idDashboard).textContent = '¡Tiempo agotado!';
+      clearInterval(timer);
+      return;
+    }
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    const texto = `Restan ${d} días, ${h} horas, ${m} min, ${s} seg`;
+    document.getElementById(idTexto).textContent = texto;
+    document.getElementById(idDashboard).textContent = texto;
+  };
+
+  updateCountdown();
+  const timer = setInterval(updateCountdown, 1000);
+}
+
+// Dashboard
 function renderDashboard() {
-    const dashboard = document.getElementById('dashboardContent');
-    dashboard.innerHTML = '';
-
-    renderContadorImpuestos(dashboard);
-    renderContadorEnergia(dashboard);
-    renderAguaResumen(dashboard);
-    renderSolarisResumen(dashboard);
+  document.getElementById('dashboardAguaLitros').textContent = localStorage.getItem('aguaLitros') || 0;
+  document.getElementById('dashboardAguaLinterjones').textContent = localStorage.getItem('aguaLinterjones') || 0;
+  document.getElementById('dashboardSolaris').textContent = localStorage.getItem('solaris') || 0;
+  iniciarCuentaRegresiva('impuestos');
+  iniciarCuentaRegresiva('energia');
+  document.getElementById('impuestosDashboardCard').style.display = 'block';
+  document.getElementById('energiaDashboardCard').style.display = 'block';
 }
 
-// AGUA
-function renderAguaResumen(container) {
-    const linterjones = localStorage.getItem('aguaLinterjones') || 0;
-    const litros = localStorage.getItem('aguaLitros') || 0;
-
-    const aguaCard = document.createElement('div');
-    aguaCard.className = 'agua-card';
-    aguaCard.innerHTML = `
-        <h3>💧 Agua</h3>
-        <p>Linterjones: ${linterjones}</p>
-        <p>Litros sueltos: ${litros}</p>
-    `;
-
-    container.appendChild(aguaCard);
+function restoreInputs() {
+  document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
+  document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
+  document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
 }
 
-// SOLARIS
-function renderSolarisResumen(container) {
-    const cantidad = localStorage.getItem('solaris') || 0;
-
-    const solarisCard = document.createElement('div');
-    solarisCard.className = 'solaris-card';
-    solarisCard.innerHTML = `
-        <h3>💰 Solaris</h3>
-        <p>Cantidad: ${cantidad}</p>
-    `;
-
-    container.appendChild(solarisCard);
+// Exportar e importar
+function exportData() {
+  const data = {
+    aguaLitros: localStorage.getItem('aguaLitros'),
+    aguaLinterjones: localStorage.getItem('aguaLinterjones'),
+    solaris: localStorage.getItem('solaris'),
+    impuestosVencimiento: localStorage.getItem('impuestosVencimiento'),
+    energiaVencimiento: localStorage.getItem('energiaVencimiento'),
+    objectives
+  };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dune_tracker_backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-// AUTENTICACIÓN
-onAuthStateChanged(auth, async (_user) => {
-    user = _user;
-    if (user) await cargarDatosDesdeFirebase(user);
-});
-
-// === ENERGÍA ===
-async function guardarEnergia() {
-    const dias = parseInt(document.getElementById('energiaDias').value) || 0;
-    const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
-
-    const tiempoRestanteMs = (dias * 24 + horas) * 60 * 60 * 1000;
-    const fechaFin = Date.now() + tiempoRestanteMs;
-
-    localStorage.setItem('energiaFin', fechaFin);
-
-    if (user) {
-        const userDocRef = doc(db, "usuarios", user.uid);
-        await setDoc(userDocRef, { energiaFin: fechaFin }, { merge: true });
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.aguaLitros) localStorage.setItem('aguaLitros', data.aguaLitros);
+      if (data.aguaLinterjones) localStorage.setItem('aguaLinterjones', data.aguaLinterjones);
+      if (data.solaris) localStorage.setItem('solaris', data.solaris);
+      if (data.impuestosVencimiento) localStorage.setItem('impuestosVencimiento', data.impuestosVencimiento);
+      if (data.energiaVencimiento) localStorage.setItem('energiaVencimiento', data.energiaVencimiento);
+      if (data.objectives) objectives = data.objectives;
+      renderDashboard();
+      restoreInputs();
+      alert('Datos importados correctamente.');
+    } catch (err) {
+      alert('Error al importar el archivo.');
     }
-
-    renderDashboard();
-    iniciarCuentaRegresivaEnergia();
+  };
+  reader.readAsText(file);
 }
-
-function iniciarCuentaRegresivaEnergia() {
-    const contenedor = document.getElementById('energiaCountdownTexto');
-    const energiaFin = localStorage.getItem('energiaFin');
-    if (!energiaFin) return;
-
-    function actualizarEnergia() {
-        const ahora = Date.now();
-        const resta = energiaFin - ahora;
-
-        if (resta <= 0) {
-            contenedor.textContent = '¡Sin energía!';
-            clearInterval(intervaloEnergia);
-            return;
-        }
-
-        const dias = Math.floor(resta / (1000 * 60 * 60 * 24));
-        const horas = Math.floor((resta % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutos = Math.floor((resta % (1000 * 60 * 60)) / (1000 * 60));
-        const segundos = Math.floor((resta % (1000 * 60)) / 1000);
-
-        contenedor.textContent = `Restan ${dias} días, ${horas} horas y ${minutos} minutos para que se acabe la energía`;
-    }
-
-    actualizarEnergia();
-    var intervaloEnergia = setInterval(actualizarEnergia, 1000);
-}
-
-// === IMPUESTOS ===
-async function guardarImpuestos() {
-    const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
-    const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
-
-    const tiempoRestanteMs = (dias * 24 + horas) * 60 * 60 * 1000;
-    const fechaFin = Date.now() + tiempoRestanteMs;
-
-    localStorage.setItem('impuestosFin', fechaFin);
-
-    if (user) {
-        const userDocRef = doc(db, "usuarios", user.uid);
-        await setDoc(userDocRef, { impuestosFin: fechaFin }, { merge: true });
-    }
-
-    renderDashboard();
-    iniciarCuentaRegresivaImpuestos();
-}
-
-function iniciarCuentaRegresivaImpuestos() {
-    const contenedor = document.getElementById('impuestosCountdownTexto');
-    const impuestosFin = localStorage.getItem('impuestosFin');
-    if (!impuestosFin) return;
-
-    function actualizarImpuestos() {
-        const ahora = Date.now();
-        const resta = impuestosFin - ahora;
-
-        if (resta <= 0) {
-            contenedor.textContent = '¡Debes pagar los impuestos!';
-            clearInterval(intervaloImpuestos);
-            return;
-        }
-
-        const dias = Math.floor(resta / (1000 * 60 * 60 * 24));
-        const horas = Math.floor((resta % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutos = Math.floor((resta % (1000 * 60 * 60)) / (1000 * 60));
-        const segundos = Math.floor((resta % (1000 * 60)) / 1000);
-
-        contenedor.textContent = `Restan ${dias} días, ${horas} horas y ${minutos} minutos para pagar los impuestos`;
-    }
-
-    actualizarImpuestos();
-    var intervaloImpuestos = setInterval(actualizarImpuestos, 1000);
-}
-
-// === AL INICIAR LA WEB ===
-window.onload = () => {
-    iniciarCuentaRegresivaImpuestos();
-    iniciarCuentaRegresivaEnergia();
-};
