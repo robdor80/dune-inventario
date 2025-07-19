@@ -1,54 +1,64 @@
-// Variables globales
-let objectives = [];
-let changeCount = 0;
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Inicialización
+const firebaseConfig = {
+  apiKey: "AIzaSyAs3ZeDo6g_SwaiGbruER2444rWkafQLTU",
+  authDomain: "dune-inventario.firebaseapp.com",
+  projectId: "dune-inventario",
+  storageBucket: "dune-inventario.firebasestorage.app",
+  messagingSenderId: "26414027507",
+  appId: "1:26414027507:web:b8970fb32a837d7117dd86"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+let currentUser = null;
+
 window.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
-  restoreInputs();
+  setupAuth();
+  setupEventListeners();
 });
 
-function initializeApp() {
-  loadDataFromStorage();
-  setupEventListeners();
-  renderDashboard();
-}
+function setupAuth() {
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const userNameEl = document.getElementById("userName");
 
-// Almacenamiento
-function loadDataFromStorage() {
-  try {
-    objectives = JSON.parse(localStorage.getItem('duneObjectives')) || [];
-  } catch (error) {
-    console.error('Error al cargar datos:', error);
-    objectives = [];
-  }
-}
-
-function saveToStorage() {
-  try {
-    localStorage.setItem('duneObjectives', JSON.stringify(objectives));
-    changeCount++;
-    if (changeCount >= 5) {
-      createBackup();
-      changeCount = 0;
+  loginBtn.addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      currentUser = result.user;
+      loadUserData();
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
     }
-  } catch (error) {
-    alert('Error al guardar en localStorage');
-  }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    currentUser = null;
+    location.reload();
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      loginBtn.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+      userNameEl.textContent = user.displayName;
+      loadUserData();
+    } else {
+      loginBtn.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+      userNameEl.textContent = "";
+    }
+  });
 }
 
-function createBackup() {
-  const backup = {
-    objectives,
-    aguaLitros: localStorage.getItem('aguaLitros'),
-    aguaLinterjones: localStorage.getItem('aguaLinterjones'),
-    solaris: localStorage.getItem('solaris'),
-    timestamp: new Date().toISOString()
-  };
-  localStorage.setItem('duneBackup', JSON.stringify(backup));
-}
-
-// Eventos
 function setupEventListeners() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
@@ -64,16 +74,7 @@ function setupEventListeners() {
     document.getElementById('energiaFormContainer').style.display = 'block';
   });
 
-  document.getElementById('exportBtn').addEventListener('click', exportData);
-  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
-  document.getElementById('importFile').addEventListener('change', importData);
-
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    saveToStorage();
-    alert('Datos guardados');
-  });
-
-  document.getElementById('objectivesBtn').addEventListener('click', () => alert('Gestión de objetivos no implementada.'));
+  document.getElementById('saveBtn').addEventListener('click', guardarAguaYSolaris);
 }
 
 function switchTab(tabName) {
@@ -86,64 +87,68 @@ function switchTab(tabName) {
   if (tabName === 'dashboard') renderDashboard();
 }
 
-// Agua
-function guardarAgua() {
-  const litros = parseInt(document.getElementById('aguaLitros').value) || 0;
-  const linterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
-  localStorage.setItem('aguaLitros', litros);
-  localStorage.setItem('aguaLinterjones', linterjones);
-  renderDashboard();
-  alert('Datos de agua guardados.');
+async function loadUserData() {
+  if (!currentUser) return;
+  const docRef = doc(db, "usuarios", currentUser.uid);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    document.getElementById('aguaLinterjones').value = data.aguaLinterjones || 0;
+    document.getElementById('aguaLitros').value = data.aguaLitros || 0;
+    document.getElementById('solarisCantidad').value = data.solaris || 0;
+    if (data.impuestosVencimiento) iniciarCuentaRegresiva("impuestos", data.impuestosVencimiento);
+    if (data.energiaVencimiento) iniciarCuentaRegresiva("energia", data.energiaVencimiento);
+    renderDashboard(data);
+  }
 }
 
-// Solaris
-function guardarSolaris() {
-  const cantidad = parseInt(document.getElementById('solarisCantidad').value) || 0;
-  localStorage.setItem('solaris', cantidad);
-  renderDashboard();
-  alert('Cantidad de Solaris guardada.');
+async function guardarAguaYSolaris() {
+  const aguaLitros = parseInt(document.getElementById('aguaLitros').value) || 0;
+  const aguaLinterjones = parseInt(document.getElementById('aguaLinterjones').value) || 0;
+  const solaris = parseInt(document.getElementById('solarisCantidad').value) || 0;
+  await guardarEnFirestore({ aguaLitros, aguaLinterjones, solaris });
+  renderDashboard({ aguaLitros, aguaLinterjones, solaris });
+  alert("Datos guardados");
 }
 
-// Impuestos
-function guardarImpuestos() {
+async function guardarImpuestos() {
   const dias = parseInt(document.getElementById('impuestosDias').value) || 0;
   const horas = parseInt(document.getElementById('impuestosHoras').value) || 0;
-  const totalMs = (dias * 24 + horas) * 60 * 60 * 1000;
-  const vencimiento = Date.now() + totalMs;
-  localStorage.setItem('impuestosVencimiento', vencimiento);
-  iniciarCuentaRegresiva('impuestos');
+  const vencimiento = Date.now() + (dias * 24 + horas) * 60 * 60 * 1000;
+  await guardarEnFirestore({ impuestosVencimiento: vencimiento });
+  iniciarCuentaRegresiva("impuestos", vencimiento);
   renderDashboard();
   document.getElementById('impuestosFormContainer').style.display = 'none';
   document.getElementById('impuestosCuentaRegresiva').style.display = 'block';
 }
 
-// Energía
-function guardarEnergia() {
+async function guardarEnergia() {
   const dias = parseInt(document.getElementById('energiaDias').value) || 0;
   const horas = parseInt(document.getElementById('energiaHoras').value) || 0;
-  const totalMs = (dias * 24 + horas) * 60 * 60 * 1000;
-  const vencimiento = Date.now() + totalMs;
-  localStorage.setItem('energiaVencimiento', vencimiento);
-  iniciarCuentaRegresiva('energia');
+  const vencimiento = Date.now() + (dias * 24 + horas) * 60 * 60 * 1000;
+  await guardarEnFirestore({ energiaVencimiento: vencimiento });
+  iniciarCuentaRegresiva("energia", vencimiento);
   renderDashboard();
   document.getElementById('energiaFormContainer').style.display = 'none';
   document.getElementById('energiaCuentaRegresiva').style.display = 'block';
 }
 
-function iniciarCuentaRegresiva(tipo) {
+async function guardarEnFirestore(data) {
+  if (!currentUser) return;
+  const ref = doc(db, "usuarios", currentUser.uid);
+  await setDoc(ref, data, { merge: true });
+}
+
+function iniciarCuentaRegresiva(tipo, vencimiento) {
   const idTexto = `${tipo}CountdownTexto`;
   const idDashboard = `${tipo}CountdownDashboard`;
-  const vencimiento = parseInt(localStorage.getItem(`${tipo}Vencimiento`));
-
-  if (!vencimiento) return;
-
-  const updateCountdown = () => {
-    const ahora = Date.now();
-    const diff = vencimiento - ahora;
+  clearInterval(window[`${tipo}Timer`]);
+  function update() {
+    const diff = vencimiento - Date.now();
     if (diff <= 0) {
       document.getElementById(idTexto).textContent = '¡Tiempo agotado!';
       document.getElementById(idDashboard).textContent = '¡Tiempo agotado!';
-      clearInterval(timer);
+      clearInterval(window[`${tipo}Timer`]);
       return;
     }
     const d = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -153,67 +158,15 @@ function iniciarCuentaRegresiva(tipo) {
     const texto = `Restan ${d} días, ${h} horas, ${m} min, ${s} seg`;
     document.getElementById(idTexto).textContent = texto;
     document.getElementById(idDashboard).textContent = texto;
-  };
-
-  updateCountdown();
-  const timer = setInterval(updateCountdown, 1000);
+  }
+  update();
+  window[`${tipo}Timer`] = setInterval(update, 1000);
 }
 
-// Dashboard
-function renderDashboard() {
-  document.getElementById('dashboardAguaLitros').textContent = localStorage.getItem('aguaLitros') || 0;
-  document.getElementById('dashboardAguaLinterjones').textContent = localStorage.getItem('aguaLinterjones') || 0;
-  document.getElementById('dashboardSolaris').textContent = localStorage.getItem('solaris') || 0;
-  iniciarCuentaRegresiva('impuestos');
-  iniciarCuentaRegresiva('energia');
+function renderDashboard(data = {}) {
+  document.getElementById('dashboardAguaLitros').textContent = data.aguaLitros || document.getElementById('aguaLitros').value || 0;
+  document.getElementById('dashboardAguaLinterjones').textContent = data.aguaLinterjones || document.getElementById('aguaLinterjones').value || 0;
+  document.getElementById('dashboardSolaris').textContent = data.solaris || document.getElementById('solarisCantidad').value || 0;
   document.getElementById('impuestosDashboardCard').style.display = 'block';
   document.getElementById('energiaDashboardCard').style.display = 'block';
-}
-
-function restoreInputs() {
-  document.getElementById('aguaLinterjones').value = localStorage.getItem('aguaLinterjones') || 0;
-  document.getElementById('aguaLitros').value = localStorage.getItem('aguaLitros') || 0;
-  document.getElementById('solarisCantidad').value = localStorage.getItem('solaris') || 0;
-}
-
-// Exportar e importar
-function exportData() {
-  const data = {
-    aguaLitros: localStorage.getItem('aguaLitros'),
-    aguaLinterjones: localStorage.getItem('aguaLinterjones'),
-    solaris: localStorage.getItem('solaris'),
-    impuestosVencimiento: localStorage.getItem('impuestosVencimiento'),
-    energiaVencimiento: localStorage.getItem('energiaVencimiento'),
-    objectives
-  };
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'dune_tracker_backup.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.aguaLitros) localStorage.setItem('aguaLitros', data.aguaLitros);
-      if (data.aguaLinterjones) localStorage.setItem('aguaLinterjones', data.aguaLinterjones);
-      if (data.solaris) localStorage.setItem('solaris', data.solaris);
-      if (data.impuestosVencimiento) localStorage.setItem('impuestosVencimiento', data.impuestosVencimiento);
-      if (data.energiaVencimiento) localStorage.setItem('energiaVencimiento', data.energiaVencimiento);
-      if (data.objectives) objectives = data.objectives;
-      renderDashboard();
-      restoreInputs();
-      alert('Datos importados correctamente.');
-    } catch (err) {
-      alert('Error al importar el archivo.');
-    }
-  };
-  reader.readAsText(file);
 }
